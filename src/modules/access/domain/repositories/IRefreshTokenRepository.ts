@@ -2,6 +2,7 @@ import type { RefreshToken } from '../entities/RefreshToken.js'
 
 export interface CreateRefreshTokenParams {
   jti: string
+  userId: string
   sessionId: string
   tokenHash: string
   expiresAt: Date

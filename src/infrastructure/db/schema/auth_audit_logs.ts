@@ -8,6 +8,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core'
 
+import { roles } from './roles.js'
 import { userSessions } from './user_sessions.js'
 import { users } from './users.js'
 
@@ -22,6 +23,9 @@ export const authAuditLogs = pgTable(
       onDelete: 'set null',
     }),
     sessionId: uuid('session_id').references(() => userSessions.id, {
+      onDelete: 'set null',
+    }),
+    roleId: uuid('role_id').references(() => roles.id, {
       onDelete: 'set null',
     }),
     eventType: varchar('event_type', { length: 128 }).notNull(),
@@ -55,6 +59,9 @@ export const authAuditLogs = pgTable(
     ),
     authAuditLogsSessionIdIdx: index('auth_audit_logs_session_id_idx').on(
       table.sessionId,
+    ),
+    authAuditLogsRoleIdIdx: index('auth_audit_logs_role_id_idx').on(
+      table.roleId,
     ),
     authAuditLogsActorUserIdIdx: index('auth_audit_logs_actor_user_id_idx').on(
       table.actorUserId,

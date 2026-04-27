@@ -8,6 +8,7 @@ servers:
 tags:
   - name: Health
   - name: Auth
+  - name: Admin
 components:
   securitySchemes:
     accessTokenCookie:
@@ -94,6 +95,32 @@ components:
       required:
         - currentPassword
         - newPassword
+    ForgotPasswordRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+        - email
+    ResetPasswordRequest:
+      type: object
+      properties:
+        token:
+          type: string
+        newPassword:
+          type: string
+          minLength: 8
+      required:
+        - token
+        - newPassword
+    VerifyEmailRequest:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+        - token
     MessageResponse:
       type: object
       properties:
@@ -108,6 +135,97 @@ components:
           $ref: '#/components/schemas/AuthUser'
       required:
         - user
+    SessionItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        deviceName:
+          type: string
+          nullable: true
+        userAgent:
+          type: string
+          nullable: true
+        ipAddress:
+          type: string
+          nullable: true
+        lastActivityAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        isCurrent:
+          type: boolean
+      required:
+        - id
+        - lastActivityAt
+        - expiresAt
+        - createdAt
+        - isCurrent
+    SessionsResponse:
+      type: object
+      properties:
+        sessions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionItem'
+      required:
+        - sessions
+    RoleItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        isSystem:
+          type: boolean
+      required:
+        - id
+        - code
+        - name
+        - isSystem
+    RolesResponse:
+      type: object
+      properties:
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleItem'
+      required:
+        - roles
+    UserRolesResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleItem'
+      required:
+        - userId
+        - roles
+    AssignUserRoleRequest:
+      type: object
+      properties:
+        roleId:
+          type: string
+          format: uuid
+      required:
+        - roleId
 paths:
   /health:
     get:
@@ -273,6 +391,116 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /auth/forgot-password:
+    post:
+      tags:
+        - Auth
+      summary: Genera instrucciones de recuperacion de password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '200':
+          description: Respuesta idempotente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '422':
+          description: Body invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limited
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/reset-password:
+    post:
+      tags:
+        - Auth
+      summary: Resetea password usando token de un solo uso
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reseteado y sesiones revocadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Token invalido o expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Body invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/verify-email:
+    post:
+      tags:
+        - Auth
+      summary: Verifica email con token de un solo uso
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+      responses:
+        '200':
+          description: Email verificado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: Token invalido o expirado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Body invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/resend-verification:
+    post:
+      tags:
+        - Auth
+      summary: Regenera instrucciones de verificacion de email
+      security:
+        - accessTokenCookie: []
+      responses:
+        '200':
+          description: Respuesta idempotente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/me:
     get:
       tags:
@@ -289,6 +517,231 @@ paths:
                 $ref: '#/components/schemas/AuthUserResponse'
         '401':
           description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/sessions:
+    get:
+      tags:
+        - Auth
+      summary: Lista sesiones activas del usuario autenticado
+      security:
+        - accessTokenCookie: []
+      responses:
+        '200':
+          description: Lista de sesiones
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionsResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/sessions/{sessionId}:
+    delete:
+      tags:
+        - Auth
+      summary: Revoca una sesion especifica del usuario autenticado
+      security:
+        - accessTokenCookie: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Sesion revocada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Sesion no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/roles:
+    get:
+      tags:
+        - Admin
+      summary: Lista roles disponibles
+      security:
+        - accessTokenCookie: []
+      responses:
+        '200':
+          description: Lista de roles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolesResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Requiere rol admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/users/{userId}/roles:
+    get:
+      tags:
+        - Admin
+      summary: Lista roles activos de un usuario
+      security:
+        - accessTokenCookie: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Roles activos del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRolesResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Requiere rol admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Usuario no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - Admin
+      summary: Asigna un rol a un usuario
+      security:
+        - accessTokenCookie: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignUserRoleRequest'
+      responses:
+        '200':
+          description: Rol asignado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Requiere rol admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Usuario o rol no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Rol ya asignado al usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Body invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/users/{userId}/roles/{roleId}:
+    delete:
+      tags:
+        - Admin
+      summary: Revoca un rol activo de un usuario
+      security:
+        - accessTokenCookie: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Rol revocado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Requiere rol admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Usuario, rol o asignacion no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: No se puede revocar el ultimo rol activo
           content:
             application/json:
               schema:

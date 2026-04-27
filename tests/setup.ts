@@ -1,2 +1,7 @@
-import 'reflect-metadata';
-// Aquí se pueden añadir mocks globales o limpiezas de base de datos
+import 'reflect-metadata'
+
+import { afterEach, jest } from '@jest/globals'
+
+afterEach(() => {
+  jest.restoreAllMocks()
+})

@@ -10,11 +10,14 @@ import type {
   LoginInputDto,
   LogoutAllInputDto,
   LogoutInputDto,
+  RevokeSessionInputDto,
   RefreshTokenInputDto,
 } from '../../application/dtos/AuthDtos.js'
 import { LoginUseCase } from '../../application/use-cases/LoginUseCase.js'
+import { ListSessionsUseCase } from '../../application/use-cases/ListSessionsUseCase.js'
 import { LogoutAllUseCase } from '../../application/use-cases/LogoutAllUseCase.js'
 import { LogoutUseCase } from '../../application/use-cases/LogoutUseCase.js'
+import { RevokeSessionUseCase } from '../../application/use-cases/RevokeSessionUseCase.js'
 import { RefreshTokenUseCase } from '../../application/use-cases/RefreshTokenUseCase.js'
 import { UnauthorizedError } from '../../../../shared/errors/HttpErrors.js'
 import {
@@ -40,13 +43,23 @@ const getSignedCookie = (
   return typeof cookieValue === 'string' ? cookieValue : null
 }
 
+const getRouteParam = (request: Request, paramName: string): string | null => {
+  const paramValue = request.params[paramName]
+
+  return typeof paramValue === 'string' ? paramValue : null
+}
+
 @injectable()
 export class AccessController {
   public constructor(
     @inject(TYPES.LoginUseCase)
     private readonly loginUseCase: LoginUseCase,
+    @inject(TYPES.ListSessionsUseCase)
+    private readonly listSessionsUseCase: ListSessionsUseCase,
     @inject(TYPES.RefreshTokenUseCase)
     private readonly refreshTokenUseCase: RefreshTokenUseCase,
+    @inject(TYPES.RevokeSessionUseCase)
+    private readonly revokeSessionUseCase: RevokeSessionUseCase,
     @inject(TYPES.LogoutUseCase)
     private readonly logoutUseCase: LogoutUseCase,
     @inject(TYPES.LogoutAllUseCase)
@@ -107,6 +120,60 @@ export class AccessController {
 
     response.status(200).json({
       message: 'Session refreshed',
+    })
+  }
+
+  public async sessions(request: Request, response: Response): Promise<void> {
+    if (request.user === undefined) {
+      throw new UnauthorizedError('Missing authenticated user')
+    }
+
+    const result = await this.listSessionsUseCase.execute(
+      request.user.userId,
+      request.user.sessionKey,
+    )
+
+    response.status(200).json(result)
+  }
+
+  public async revokeSession(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
+    if (request.user === undefined) {
+      throw new UnauthorizedError('Missing authenticated user')
+    }
+
+    const sessionId = getRouteParam(request, 'sessionId')
+
+    if (sessionId === null) {
+      throw new UnauthorizedError('Missing session identifier')
+    }
+
+    const input: RevokeSessionInputDto = {
+      sessionId,
+      userId: request.user.userId,
+      currentSessionKey: request.user.sessionKey,
+      accessToken: getSignedCookie(request, ACCESS_TOKEN_COOKIE_NAME),
+      requestId: request.requestId ?? null,
+      userAgent: getRequestUserAgent(request),
+      ipAddress: getRequestIp(request),
+    }
+    const result = await this.revokeSessionUseCase.execute(input)
+
+    if (result.isCurrentSession) {
+      response.clearCookie(
+        ACCESS_TOKEN_COOKIE_NAME,
+        getClearedAccessTokenCookieOptions(),
+      )
+      response.clearCookie(
+        REFRESH_TOKEN_COOKIE_NAME,
+        getClearedRefreshTokenCookieOptions(),
+      )
+    }
+
+    response.status(200).json({
+      message: 'Session revoked successfully',
     })
   }
 

@@ -20,6 +20,7 @@
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
+    "isolatedModules": true,
     "noImplicitOverride": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,

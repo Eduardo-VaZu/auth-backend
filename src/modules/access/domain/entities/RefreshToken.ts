@@ -1,6 +1,7 @@
 export interface RefreshTokenProps {
   id: string
   jti: string
+  userId: string
   sessionId: string
   tokenHash: string
   expiresAt: Date
@@ -17,6 +18,8 @@ export class RefreshToken {
   public readonly id: string
 
   public readonly jti: string
+
+  public readonly userId: string
 
   public readonly sessionId: string
 
@@ -41,6 +44,7 @@ export class RefreshToken {
   public constructor(props: RefreshTokenProps) {
     this.id = props.id
     this.jti = props.jti
+    this.userId = props.userId
     this.sessionId = props.sessionId
     this.tokenHash = props.tokenHash
     this.expiresAt = props.expiresAt

@@ -11,4 +11,5 @@ export interface IUserRepository {
   findById(id: string): Promise<User | null>
   create(params: CreateUserParams): Promise<User>
   updateLastLoginAt(userId: string, lastLoginAt?: Date): Promise<void>
+  markEmailAsVerified(userId: string, verifiedAt?: Date): Promise<void>
 }

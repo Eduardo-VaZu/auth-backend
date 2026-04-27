@@ -5,6 +5,7 @@ import type { Logger } from 'pino'
 import { pool } from '../infrastructure/db/db.js'
 import { redisClient, type AppRedisClient } from '../infrastructure/redis.js'
 import { configureAccessModule } from '../modules/access/access.module.js'
+import { configureAdminModule } from '../modules/admin/admin.module.js'
 import { configureAuditModule } from '../modules/audit/audit.module.js'
 import { configureCredentialsModule } from '../modules/credentials/credentials.module.js'
 import { configureIdentityModule } from '../modules/identity/identity.module.js'
@@ -32,4 +33,5 @@ container.bind(TYPES.HealthController).to(HealthController)
 configureIdentityModule(container)
 configureCredentialsModule(container)
 configureAccessModule(container)
+configureAdminModule(container)
 configureAuditModule(container)

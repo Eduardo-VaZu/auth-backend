@@ -72,6 +72,35 @@ export interface ChangePasswordInputDto {
   ipAddress: string | null
 }
 
+export interface SessionItemDto {
+  id: string
+  deviceName: string | null
+  userAgent: string | null
+  ipAddress: string | null
+  lastActivityAt: string
+  expiresAt: string
+  createdAt: string
+  isCurrent: boolean
+}
+
+export interface SessionsResultDto {
+  sessions: SessionItemDto[]
+}
+
+export interface RevokeSessionInputDto {
+  sessionId: string
+  userId: string
+  currentSessionKey: string | null
+  accessToken: string | null
+  requestId: string | null
+  userAgent: string | null
+  ipAddress: string | null
+}
+
+export interface RevokeSessionResultDto {
+  isCurrentSession: boolean
+}
+
 export const toAuthUserDto = (user: User): AuthUserDto => ({
   id: user.id,
   email: user.email,

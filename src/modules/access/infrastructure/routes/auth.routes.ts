@@ -28,20 +28,28 @@ export const createAuthRouter = (container: Container): Router => {
     '/login',
     validateBody(loginSchema),
     (request, response, next) => {
-      controller.login(request, response).catch(next)
+      Promise.resolve(controller.login(request, response)).catch(next)
     },
   )
 
   router.post('/refresh', (request, response, next) => {
-    controller.refresh(request, response).catch(next)
+    Promise.resolve(controller.refresh(request, response)).catch(next)
+  })
+
+  router.get('/sessions', authenticate, (request, response, next) => {
+    Promise.resolve(controller.sessions(request, response)).catch(next)
+  })
+
+  router.delete('/sessions/:sessionId', authenticate, (request, response, next) => {
+    Promise.resolve(controller.revokeSession(request, response)).catch(next)
   })
 
   router.post('/logout', authenticate, (request, response, next) => {
-    controller.logout(request, response).catch(next)
+    Promise.resolve(controller.logout(request, response)).catch(next)
   })
 
   router.post('/logout-all', authenticate, (request, response, next) => {
-    controller.logoutAll(request, response).catch(next)
+    Promise.resolve(controller.logoutAll(request, response)).catch(next)
   })
 
   return router

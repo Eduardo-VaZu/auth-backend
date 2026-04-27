@@ -1,7 +1,10 @@
 import { inject, injectable } from 'inversify'
 
 import { TYPES } from '../../../../container/types.js'
-import type { AppRedisClient } from '../../../../infrastructure/redis.js'
+import {
+  redisKeys,
+  type AppRedisClient,
+} from '../../../../infrastructure/redis.js'
 import {
   ACCOUNT_LOCK_THRESHOLD,
   IP_LOCK_THRESHOLD,
@@ -15,17 +18,6 @@ import type {
   LoginFailureResult,
   LoginThrottleStatus,
 } from '../../domain/services/ISecurityThrottleService.js'
-
-const getLoginIpAttemptsKey = (ipAddress: string): string =>
-  `security:login:ip:${ipAddress}`
-const getLoginAccountAttemptsKey = (identifier: string): string =>
-  `security:login:account:${identifier}`
-const getPasswordSprayingKey = (ipAddress: string): string =>
-  `security:password-spraying:ip:${ipAddress}`
-const getAccountLockKey = (identifier: string): string =>
-  `security:lock:account:${identifier}`
-const getIpLockKey = (ipAddress: string): string =>
-  `security:lock:ip:${ipAddress}`
 
 const normalizeTtl = (ttl: number): number => Math.max(ttl, 0)
 
@@ -51,10 +43,10 @@ export class SecurityThrottleService implements ISecurityThrottleService {
     ipAddress: string | null,
   ): Promise<LoginThrottleStatus> {
     const [accountTtl, ipTtl] = await Promise.all([
-      this.redisClient.ttl(getAccountLockKey(identifier)),
+      this.redisClient.ttl(redisKeys.throttle.accountLock(identifier)),
       ipAddress === null
         ? Promise.resolve(-2)
-        : this.redisClient.ttl(getIpLockKey(ipAddress)),
+        : this.redisClient.ttl(redisKeys.throttle.ipLock(ipAddress)),
     ])
 
     return {
@@ -70,12 +62,12 @@ export class SecurityThrottleService implements ISecurityThrottleService {
     ipAddress: string | null,
   ): Promise<LoginFailureResult> {
     const accountAttempts = await this.incrementCounter(
-      getLoginAccountAttemptsKey(identifier),
+      redisKeys.throttle.loginUserAttempts(identifier),
     )
     const ipAttempts =
       ipAddress === null
         ? 0
-        : await this.incrementCounter(getLoginIpAttemptsKey(ipAddress))
+        : await this.incrementCounter(redisKeys.throttle.loginIpAttempts(ipAddress))
 
     const accountLockTtlSeconds =
       accountAttempts >= ACCOUNT_LOCK_THRESHOLD
@@ -88,7 +80,7 @@ export class SecurityThrottleService implements ISecurityThrottleService {
 
     if (accountLockTtlSeconds > 0) {
       await this.redisClient.set(
-        getAccountLockKey(identifier),
+        redisKeys.throttle.accountLock(identifier),
         String(accountAttempts),
         {
           EX: accountLockTtlSeconds,
@@ -97,9 +89,13 @@ export class SecurityThrottleService implements ISecurityThrottleService {
     }
 
     if (ipAddress !== null && ipLockTtlSeconds > 0) {
-      await this.redisClient.set(getIpLockKey(ipAddress), String(ipAttempts), {
-        EX: ipLockTtlSeconds,
-      })
+      await this.redisClient.set(
+        redisKeys.throttle.ipLock(ipAddress),
+        String(ipAttempts),
+        {
+          EX: ipLockTtlSeconds,
+        },
+      )
     }
 
     const distinctAccountsFromIp = await this.trackDistinctAccountForIp(
@@ -122,8 +118,8 @@ export class SecurityThrottleService implements ISecurityThrottleService {
 
   public async clearAccountLoginFailures(identifier: string): Promise<boolean> {
     const keys = [
-      getLoginAccountAttemptsKey(identifier),
-      getAccountLockKey(identifier),
+      redisKeys.throttle.loginUserAttempts(identifier),
+      redisKeys.throttle.accountLock(identifier),
     ]
 
     const deleted = await this.redisClient.del(keys)
@@ -149,7 +145,7 @@ export class SecurityThrottleService implements ISecurityThrottleService {
       return 0
     }
 
-    const key = getPasswordSprayingKey(ipAddress)
+    const key = redisKeys.throttle.passwordSprayingIp(ipAddress)
 
     await this.redisClient.sAdd(key, identifier)
     await this.redisClient.expire(key, LOGIN_FAILURE_WINDOW_SECONDS)

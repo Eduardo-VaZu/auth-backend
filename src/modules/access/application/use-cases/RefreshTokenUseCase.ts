@@ -126,6 +126,7 @@ export class RefreshTokenUseCase {
 
           const newStoredRefreshToken = await refreshTokenRepository.create({
             jti: refreshToken.jti,
+            userId: user.id,
             sessionId: session.id,
             tokenHash: refreshTokenHash,
             expiresAt: refreshToken.expiresAt,

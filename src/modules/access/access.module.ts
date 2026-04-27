@@ -2,8 +2,10 @@ import type { Container } from 'inversify'
 
 import { TYPES } from '../../container/types.js'
 import { LoginUseCase } from './application/use-cases/LoginUseCase.js'
+import { ListSessionsUseCase } from './application/use-cases/ListSessionsUseCase.js'
 import { LogoutAllUseCase } from './application/use-cases/LogoutAllUseCase.js'
 import { LogoutUseCase } from './application/use-cases/LogoutUseCase.js'
+import { RevokeSessionUseCase } from './application/use-cases/RevokeSessionUseCase.js'
 import { RefreshTokenUseCase } from './application/use-cases/RefreshTokenUseCase.js'
 import type { IRefreshTokenRepository } from './domain/repositories/IRefreshTokenRepository.js'
 import type { IUserSessionRepository } from './domain/repositories/IUserSessionRepository.js'
@@ -26,6 +28,8 @@ export const configureAccessModule = (container: Container): void => {
   container.bind<ISessionStore>(TYPES.ISessionStore).to(SessionStore)
 
   container.bind<LoginUseCase>(TYPES.LoginUseCase).to(LoginUseCase)
+  container.bind<ListSessionsUseCase>(TYPES.ListSessionsUseCase).to(ListSessionsUseCase)
+  container.bind<RevokeSessionUseCase>(TYPES.RevokeSessionUseCase).to(RevokeSessionUseCase)
   container.bind<RefreshTokenUseCase>(TYPES.RefreshTokenUseCase).to(RefreshTokenUseCase)
   container.bind<LogoutUseCase>(TYPES.LogoutUseCase).to(LogoutUseCase)
   container.bind<LogoutAllUseCase>(TYPES.LogoutAllUseCase).to(LogoutAllUseCase)

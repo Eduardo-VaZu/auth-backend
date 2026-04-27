@@ -1,9 +1,12 @@
 import { sql } from 'drizzle-orm'
 import { injectable } from 'inversify'
 
-import { db } from '../../../infrastructure/db/db.js'
+import { db, type AppTransaction } from '../../../infrastructure/db/db.js'
 import { RefreshTokenRepository } from '../../../modules/access/infrastructure/repositories/RefreshTokenRepository.js'
+import { RoleRepository } from '../../../modules/admin/infrastructure/repositories/RoleRepository.js'
+import { UserRoleRepository } from '../../../modules/admin/infrastructure/repositories/UserRoleRepository.js'
 import { UserSessionRepository } from '../../../modules/access/infrastructure/repositories/UserSessionRepository.js'
+import { OneTimeTokenRepository } from '../../../modules/credentials/infrastructure/repositories/OneTimeTokenRepository.js'
 import { UserCredentialRepository } from '../../../modules/credentials/infrastructure/repositories/UserCredentialRepository.js'
 import { UserRepository } from '../../../modules/identity/infrastructure/repositories/UserRepository.js'
 import { AuthAuditService } from '../../../modules/audit/infrastructure/services/AuthAuditService.js'
@@ -17,10 +20,13 @@ export class AuthUnitOfWork implements IAuthUnitOfWork {
   public async run<T>(
     callback: (repositories: AuthRepositories) => Promise<T>,
   ): Promise<T> {
-    return db.transaction(async (transaction: any) => {
+    return db.transaction(async (transaction: AppTransaction) => {
       const refreshTokenRepository = new RefreshTokenRepository(transaction)
       const userCredentialRepository = new UserCredentialRepository(transaction)
+      const oneTimeTokenRepository = new OneTimeTokenRepository(transaction)
       const userRepository = new UserRepository(transaction)
+      const roleRepository = new RoleRepository(transaction)
+      const userRoleRepository = new UserRoleRepository(transaction)
       const userSessionRepository = new UserSessionRepository(transaction)
       const authAuditService = new AuthAuditService(transaction)
 
@@ -36,7 +42,10 @@ export class AuthUnitOfWork implements IAuthUnitOfWork {
       return callback({
         refreshTokenRepository,
         userCredentialRepository,
+        oneTimeTokenRepository,
         userRepository,
+        roleRepository,
+        userRoleRepository,
         userSessionRepository,
         authAuditService,
         acquireUserMutationLock,

@@ -92,6 +92,20 @@ export class UserRepository implements IUserRepository {
       .where(eq(schema.users.id, userId))
   }
 
+  public async markEmailAsVerified(
+    userId: string,
+    verifiedAt = new Date(),
+  ): Promise<void> {
+    await this.database
+      .update(schema.users)
+      .set({
+        emailVerifiedAt: verifiedAt,
+        updatedAt: verifiedAt,
+        status: 'active',
+      })
+      .where(eq(schema.users.id, userId))
+  }
+
   private async findActiveRolesByUserId(userId: string): Promise<UserRole[]> {
     const userRoleRows = await this.database
       .select({

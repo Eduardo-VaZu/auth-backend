@@ -24,12 +24,12 @@ export const createIdentityRouter = (container: Container): Router => {
     '/register',
     validateBody(registerSchema),
     (request, response, next) => {
-      controller.register(request, response).catch(next)
+      Promise.resolve(controller.register(request, response)).catch(next)
     },
   )
 
   router.get('/me', authenticate, (request, response, next) => {
-    controller.me(request, response).catch(next)
+    Promise.resolve(controller.me(request, response)).catch(next)
   })
 
   return router

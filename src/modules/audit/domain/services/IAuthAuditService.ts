@@ -8,6 +8,7 @@ export interface RecordAuthAuditEventParams {
   userId: string | null
   actorUserId?: string | null
   sessionId?: string | null
+  roleId?: string | null
   eventType: string
   eventStatus: AuthAuditEventStatus
   ipAddress: string | null

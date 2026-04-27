@@ -97,6 +97,35 @@ export class UserSessionRepository implements IUserSessionRepository {
     return session === undefined ? null : this.mapToEntity(session)
   }
 
+  public async listActiveByUserId(
+    userId: string,
+    referenceDate = new Date(),
+  ): Promise<UserSession[]> {
+    if (!isUuid(userId)) {
+      logInvalidUuidDiscard({
+        logger: this.logger,
+        component: 'UserSessionRepository',
+        field: 'userId',
+        value: userId,
+      })
+      return []
+    }
+
+    const sessions = await this.database
+      .select()
+      .from(schema.userSessions)
+      .where(
+        and(
+          eq(schema.userSessions.userId, userId),
+          isNull(schema.userSessions.revokedAt),
+          gt(schema.userSessions.expiresAt, referenceDate),
+        ),
+      )
+      .orderBy(asc(schema.userSessions.createdAt))
+
+    return sessions.map((session) => this.mapToEntity(session))
+  }
+
   public async countActiveByUserId(
     userId: string,
     referenceDate = new Date(),

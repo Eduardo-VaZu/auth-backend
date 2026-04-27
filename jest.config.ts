@@ -4,6 +4,7 @@ export default {
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transform: {
@@ -11,11 +12,11 @@ export default {
       'ts-jest',
       {
         useESM: true,
-        isolatedModules: true,
       },
     ],
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  cacheDirectory: '<rootDir>/.jest-cache',
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/main/**',
@@ -23,6 +24,6 @@ export default {
     '!src/types/**',
     '!src/infrastructure/db/migrations/**'
   ],
-  testMatch: ['**/*.test.ts'],
+  testMatch: ['<rootDir>/tests/**/*.test.ts'],
   verbose: true
 };

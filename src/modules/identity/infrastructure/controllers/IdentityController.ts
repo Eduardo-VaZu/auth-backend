@@ -2,6 +2,7 @@ import type { Request, Response } from 'express'
 import { inject, injectable } from 'inversify'
 
 import { TYPES } from '../../../../container/types.js'
+import type { RegisterInputDto } from '../../../access/application/dtos/AuthDtos.js'
 import { RegisterUseCase } from '../../application/use-cases/RegisterUseCase.js'
 
 @injectable()
@@ -12,12 +13,14 @@ export class IdentityController {
   ) {}
 
   public async register(request: Request, response: Response): Promise<void> {
-    const result = await this.registerUseCase.execute(request.body)
+    const result = await this.registerUseCase.execute(
+      request.body as RegisterInputDto,
+    )
 
     response.status(201).json(result)
   }
 
-  public async me(request: Request, response: Response): Promise<void> {
+  public me(request: Request, response: Response): void {
     response.status(200).json({
       user: request.user,
     })

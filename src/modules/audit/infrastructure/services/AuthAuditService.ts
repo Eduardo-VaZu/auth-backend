@@ -52,6 +52,12 @@ export class AuthAuditService implements IAuthAuditService {
     logInvalidUuidDiscard({
       logger: this.logger,
       component: 'AuthAuditService',
+      field: 'roleId',
+      value: params.roleId,
+    })
+    logInvalidUuidDiscard({
+      logger: this.logger,
+      component: 'AuthAuditService',
       field: 'requestId',
       value: params.requestId,
     })
@@ -60,6 +66,7 @@ export class AuthAuditService implements IAuthAuditService {
       userId: coerceUuidOrNull(params.userId),
       actorUserId: coerceUuidOrNull(params.actorUserId),
       sessionId: coerceUuidOrNull(params.sessionId),
+      roleId: coerceUuidOrNull(params.roleId),
       eventType: params.eventType,
       eventStatus: params.eventStatus,
       ipAddress: params.ipAddress,

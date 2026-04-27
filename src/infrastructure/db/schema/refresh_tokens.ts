@@ -10,12 +10,18 @@ import {
 } from 'drizzle-orm/pg-core'
 
 import { userSessions } from './user_sessions.js'
+import { users } from './users.js'
 
 export const refreshTokens = pgTable(
   'refresh_tokens',
   {
     id: uuid('id').defaultRandom().primaryKey(),
     jti: uuid('jti').notNull(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, {
+        onDelete: 'cascade',
+      }),
     sessionId: uuid('session_id')
       .notNull()
       .references(() => userSessions.id, {
@@ -42,12 +48,18 @@ export const refreshTokens = pgTable(
     refreshTokensJtiUniqueIdx: uniqueIndex('refresh_tokens_jti_unique_idx').on(
       table.jti,
     ),
+    refreshTokensUserIdIdx: index('refresh_tokens_user_id_idx').on(
+      table.userId,
+    ),
     refreshTokensSessionIdIdx: index('refresh_tokens_session_id_idx').on(
       table.sessionId,
     ),
     refreshTokensExpiresAtIdx: index('refresh_tokens_expires_at_idx').on(
       table.expiresAt,
     ),
+    refreshTokensUserIdExpiresAtIdx: index(
+      'refresh_tokens_user_id_expires_at_idx',
+    ).on(table.userId, table.expiresAt),
     refreshTokensSessionIdExpiresAtIdx: index(
       'refresh_tokens_session_id_expires_at_idx',
     ).on(table.sessionId, table.expiresAt),

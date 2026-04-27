@@ -26,6 +26,10 @@ export interface IUserSessionRepository {
   create(params: CreateUserSessionParams): Promise<UserSession>
   findBySessionKey(sessionKey: string): Promise<UserSession | null>
   findById(id: string): Promise<UserSession | null>
+  listActiveByUserId(
+    userId: string,
+    referenceDate?: Date,
+  ): Promise<UserSession[]>
   countActiveByUserId(userId: string, referenceDate?: Date): Promise<number>
   findOldestActiveByUserId(
     userId: string,

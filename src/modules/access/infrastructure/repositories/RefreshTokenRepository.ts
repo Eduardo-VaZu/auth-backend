@@ -5,7 +5,6 @@ import {
   desc,
   eq,
   gt,
-  inArray,
   isNotNull,
   isNull,
   lt,
@@ -55,6 +54,7 @@ export class RefreshTokenRepository implements IRefreshTokenRepository {
       .insert(schema.refreshTokens)
       .values({
         jti: params.jti,
+        userId: params.userId,
         sessionId: params.sessionId,
         tokenHash: params.tokenHash,
         expiresAt: params.expiresAt,
@@ -196,26 +196,12 @@ export class RefreshTokenRepository implements IRefreshTokenRepository {
       values.revokedReason = params.revokedReason
     }
 
-    const sessionRows = await this.database
-      .select({
-        id: schema.userSessions.id,
-      })
-      .from(schema.userSessions)
-      .where(eq(schema.userSessions.userId, params.userId))
-
-    if (sessionRows.length === 0) {
-      return
-    }
-
     await this.database
       .update(schema.refreshTokens)
       .set(values)
       .where(
         and(
-          inArray(
-            schema.refreshTokens.sessionId,
-            sessionRows.map((row) => row.id),
-          ),
+          eq(schema.refreshTokens.userId, params.userId),
           isNull(schema.refreshTokens.revokedAt),
         ),
       )
@@ -278,13 +264,9 @@ export class RefreshTokenRepository implements IRefreshTokenRepository {
         count: count(),
       })
       .from(schema.refreshTokens)
-      .innerJoin(
-        schema.userSessions,
-        eq(schema.refreshTokens.sessionId, schema.userSessions.id),
-      )
       .where(
         and(
-          eq(schema.userSessions.userId, userId),
+          eq(schema.refreshTokens.userId, userId),
           isNull(schema.refreshTokens.revokedAt),
           gt(schema.refreshTokens.expiresAt, referenceDate),
         ),
@@ -316,13 +298,9 @@ export class RefreshTokenRepository implements IRefreshTokenRepository {
         refreshToken: schema.refreshTokens,
       })
       .from(schema.refreshTokens)
-      .innerJoin(
-        schema.userSessions,
-        eq(schema.refreshTokens.sessionId, schema.userSessions.id),
-      )
       .where(
         and(
-          eq(schema.userSessions.userId, userId),
+          eq(schema.refreshTokens.userId, userId),
           isNull(schema.refreshTokens.revokedAt),
           gt(schema.refreshTokens.expiresAt, referenceDate),
         ),
@@ -400,6 +378,7 @@ export class RefreshTokenRepository implements IRefreshTokenRepository {
     const props: RefreshTokenProps = {
       id: row.id,
       jti: row.jti,
+      userId: row.userId,
       sessionId: row.sessionId,
       tokenHash: row.tokenHash,
       expiresAt: row.expiresAt,
