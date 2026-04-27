@@ -1,0 +1,36 @@
+name: Postman Sync Check
+
+on:
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - 'docs/openapi/**'
+      - 'src/**'
+  workflow_dispatch:
+
+jobs:
+  postman-sync-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      POSTMAN_SPEC_ID: 1210b2ab-b12d-4a19-b1d5-cbf28da6eec2
+      POSTMAN_COLLECTION_UID: 42700275-5823a8cb-3329-4126-9fdc-6fb5e57cfd90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Postman sync check
+        env:
+          POSTMAN_API_KEY: ${{ secrets.POSTMAN_API_KEY }}
+        run: npm run postman:sync:check

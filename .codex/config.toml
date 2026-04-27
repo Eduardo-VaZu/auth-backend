@@ -1,0 +1,13 @@
+[context]
+always_include = [
+  "AGENTS.md",
+  "TASK_PROMPTS.md",
+  "package.json",
+  "tsconfig.json",
+  "drizzle.config.ts",
+  "src/config/env.ts",
+  "src/container/types.ts",
+  "src/container/inversify.config.ts",
+  "src/app.ts",
+  "src/main/server.ts"
+]
