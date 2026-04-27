@@ -24,7 +24,8 @@ const config = {
     '!src/types/**',
     '!src/infrastructure/db/migrations/**',
   ],
-  testMatch: ['<rootDir>/tests/**/*.test.ts'],
+  roots: ['<rootDir>/tests'],
+  testMatch: ['**/*.test.ts'],
   verbose: true,
 }
 
