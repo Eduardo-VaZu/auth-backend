@@ -17,6 +17,7 @@ export default {
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   cacheDirectory: '<rootDir>/.jest-cache',
+  roots: ['<rootDir>/tests'],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/main/**',
@@ -24,6 +25,6 @@ export default {
     '!src/types/**',
     '!src/infrastructure/db/migrations/**'
   ],
-  testMatch: ['<rootDir>/tests/**/*.test.ts'],
+  testMatch: ['**/*.test.ts'],
   verbose: true
 };
