@@ -11,7 +11,9 @@ import { RedisStore } from 'rate-limit-redis'
 import { env } from './config/env.js'
 import { TYPES } from './container/types.js'
 import type { AppRedisClient } from './infrastructure/redis.js'
-import { createAuthRouter } from './modules/auth/infrastructure/routes/auth.routes.js'
+import { createAuthRouter } from './modules/access/infrastructure/routes/auth.routes.js'
+import { createIdentityRouter } from './modules/identity/infrastructure/routes/identity.routes.js'
+import { createCredentialsRouter } from './modules/credentials/infrastructure/routes/credentials.routes.js'
 import { createHealthRouter } from './modules/health/routes/health.routes.js'
 import {
   TooManyRequestsError,
@@ -55,7 +57,6 @@ export const createApp = (container: Container): Express => {
   app.use(
     cors({
       origin: (origin, callback) => {
-        // En desarrollo, permitir requests sin origen (como Postman o curl)
         if (!origin || env.CORS_ORIGIN.includes(origin)) {
           callback(null, true)
         } else {
@@ -69,6 +70,11 @@ export const createApp = (container: Container): Express => {
   app.use(cookieParser(env.COOKIE_SECRET))
   app.use(createRateLimiter(redisClient))
 
+  // Ensamblado de Módulos (Rutas)
+  // Para mantener compatibilidad con Postman V1, todas van bajo /auth por ahora
+  // pero ya están separadas lógicamente en su implementación.
+  app.use('/auth', createIdentityRouter(container))
+  app.use('/auth', createCredentialsRouter(container))
   app.use('/auth', createAuthRouter(container))
 
   app.use((_request, _response, next) => {

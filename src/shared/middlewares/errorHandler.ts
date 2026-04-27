@@ -3,7 +3,8 @@ import type { Logger } from 'pino'
 
 import { env } from '../../config/env.js'
 import { AppError } from '../errors/AppError.js'
-import { InternalError } from '../errors/HttpErrors.js'
+import { ConflictError, UnauthorizedError, InternalError } from '../errors/HttpErrors.js'
+import { DomainError, UserAlreadyExistsError, InvalidCredentialsError, SecurityBreachError } from '../domain/errors/DomainErrors.js'
 
 interface ErrorBody {
   error: {
@@ -14,30 +15,50 @@ interface ErrorBody {
   }
 }
 
+const mapDomainToHttpError = (error: DomainError): AppError => {
+  if (error instanceof UserAlreadyExistsError) {
+    return new ConflictError(error.message)
+  }
+  if (error instanceof InvalidCredentialsError) {
+    return new UnauthorizedError(error.message)
+  }
+  if (error instanceof SecurityBreachError) {
+    return new UnauthorizedError(error.message)
+  }
+  
+  return new InternalError(error.message)
+}
+
 export const createErrorHandler = (logger: Logger): ErrorRequestHandler => {
   return (error: unknown, request, response, _next) => {
     void _next
 
     const requestId = request.requestId ?? 'unknown'
+    let finalError = error
 
-    if (error instanceof AppError && error.isOperational) {
+    // Transformación de Error de Dominio a Error de Aplicación (HTTP)
+    if (error instanceof DomainError) {
+      finalError = mapDomainToHttpError(error)
+    }
+
+    if (finalError instanceof AppError && finalError.isOperational) {
       const body: ErrorBody = {
         error: {
-          code: error.code,
-          message: error.message,
+          code: finalError.code,
+          message: finalError.message,
           requestId,
-          ...(error.details === undefined ? {} : { details: error.details }),
+          ...(finalError.details === undefined ? {} : { details: finalError.details }),
         },
       }
 
-      response.status(error.statusCode).json(body)
+      response.status(finalError.statusCode).json(body)
 
       return
     }
 
     logger.error(
       {
-        err: error,
+        err: finalError,
         requestId,
         method: request.method,
         url: request.originalUrl,
@@ -46,8 +67,8 @@ export const createErrorHandler = (logger: Logger): ErrorRequestHandler => {
     )
 
     const errorMessage =
-      env.NODE_ENV !== 'production' && error instanceof Error
-        ? error.message
+      env.NODE_ENV !== 'production' && finalError instanceof Error
+        ? finalError.message
         : 'An unexpected error occurred'
 
     const internalError = new InternalError(errorMessage)

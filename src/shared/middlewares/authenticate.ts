@@ -1,9 +1,9 @@
 import type { RequestHandler } from 'express'
 
-import { ACCESS_TOKEN_COOKIE_NAME } from '../../modules/auth/application/constants/auth.constants.js'
-import type { IUserSessionRepository } from '../../modules/auth/domain/repositories/IUserSessionRepository.js'
-import type { ISessionStore } from '../../modules/auth/domain/services/ISessionStore.js'
-import type { ITokenService } from '../../modules/auth/domain/services/ITokenService.js'
+import { ACCESS_TOKEN_COOKIE_NAME } from '../../modules/access/application/constants/auth.constants.js'
+import type { IUserSessionRepository } from '../../modules/access/domain/repositories/IUserSessionRepository.js'
+import type { ISessionStore } from '../../modules/access/domain/services/ISessionStore.js'
+import type { ITokenService } from '../../modules/access/domain/services/ITokenService.js'
 import { UnauthorizedError } from '../errors/HttpErrors.js'
 
 const getSignedCookie = (
