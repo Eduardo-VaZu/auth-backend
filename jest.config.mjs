@@ -1,0 +1,31 @@
+/** @type {import('ts-jest').JestConfigWithTsJest} */
+const config = {
+  preset: 'ts-jest/presets/default-esm',
+  testEnvironment: 'node',
+  extensionsToTreatAsEsm: ['.ts'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
+  transform: {
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        useESM: true,
+      },
+    ],
+  },
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  cacheDirectory: '<rootDir>/.jest-cache',
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/main/**',
+    '!src/config/**',
+    '!src/types/**',
+    '!src/infrastructure/db/migrations/**',
+  ],
+  testMatch: ['<rootDir>/tests/**/*.test.ts'],
+  verbose: true,
+}
+
+export default config
