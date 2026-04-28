@@ -26,3 +26,13 @@ export interface ResendVerificationInputDto {
   userAgent: string | null
   ipAddress: string | null
 }
+
+export interface ChangeEmailInputDto {
+  userId: string
+  email: string
+  accessToken: string | null
+  sessionKey: string | null
+  requestId: string | null
+  userAgent: string | null
+  ipAddress: string | null
+}

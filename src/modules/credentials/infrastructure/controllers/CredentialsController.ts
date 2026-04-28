@@ -2,8 +2,10 @@ import type { Request, Response } from 'express'
 import { inject, injectable } from 'inversify'
 
 import { TYPES } from '../../../../container/types.js'
+import { ACCESS_TOKEN_COOKIE_NAME } from '../../../access/application/constants/auth.constants.js'
 import type { ChangePasswordInputDto } from '../../../access/application/dtos/AuthDtos.js'
 import type {
+  ChangeEmailInputDto,
   ForgotPasswordInputDto,
   ResendVerificationInputDto,
   ResetPasswordInputDto,
@@ -14,10 +16,11 @@ import { ResendVerificationUseCase } from '../../application/use-cases/ResendVer
 import { ResetPasswordUseCase } from '../../application/use-cases/ResetPasswordUseCase.js'
 import { VerifyEmailUseCase } from '../../application/use-cases/VerifyEmailUseCase.js'
 import { ChangePasswordUseCase } from '../../application/use-cases/ChangePasswordUseCase.js'
+import { ChangeEmailUseCase } from '../../application/use-cases/ChangeEmailUseCase.js'
 
 const getSignedAccessToken = (request: Request): string | null => {
   const cookieValue = (request.signedCookies as Record<string, unknown>)[
-    'access_token'
+    ACCESS_TOKEN_COOKIE_NAME
   ]
 
   return typeof cookieValue === 'string' ? cookieValue : null
@@ -42,6 +45,8 @@ export class CredentialsController {
     private readonly resendVerificationUseCase: ResendVerificationUseCase,
     @inject(TYPES.ChangePasswordUseCase)
     private readonly changePasswordUseCase: ChangePasswordUseCase,
+    @inject(TYPES.ChangeEmailUseCase)
+    private readonly changeEmailUseCase: ChangeEmailUseCase,
   ) {}
 
   public async forgotPassword(
@@ -134,6 +139,24 @@ export class CredentialsController {
 
     response.status(200).json({
       message: 'Password changed successfully',
+    })
+  }
+
+  public async changeEmail(request: Request, response: Response): Promise<void> {
+    const body = request.body as Pick<ChangeEmailInputDto, 'email'>
+
+    await this.changeEmailUseCase.execute({
+      userId: request.user!.userId,
+      email: body.email,
+      accessToken: getSignedAccessToken(request),
+      sessionKey: request.user!.sessionKey,
+      requestId: request.requestId ?? null,
+      userAgent: getUserAgent(request),
+      ipAddress: request.ip ?? null,
+    })
+
+    response.status(200).json({
+      message: 'Email updated. Re-verify your new email to reactivate access',
     })
   }
 }

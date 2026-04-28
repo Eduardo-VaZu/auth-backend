@@ -8,6 +8,7 @@ import type { IAuthUnitOfWork } from '../../../../shared/domain/services/IAuthUn
 import type { IUserCredentialRepository } from '../../domain/repositories/IUserCredentialRepository.js'
 import { Password } from '../../domain/value-objects/Password.js'
 import type { ResetPasswordInputDto } from '../dtos/CredentialDtos.js'
+import { parseOneTimeToken } from '../utils/parseOneTimeToken.js'
 
 @injectable()
 export class ResetPasswordUseCase {
@@ -21,25 +22,29 @@ export class ResetPasswordUseCase {
   ) {}
 
   public async execute(input: ResetPasswordInputDto): Promise<void> {
-    const candidateTokens = await this.authUnitOfWork.run(
-      async ({ oneTimeTokenRepository }) =>
-        oneTimeTokenRepository.findActiveByType('password_reset'),
-    )
+    const parsedToken = parseOneTimeToken(input.token)
 
-    let matchedTokenId: string | null = null
-    let matchedUserId: string | null = null
-
-    for (const candidate of candidateTokens) {
-      if (await argon2.verify(candidate.tokenHash, input.token)) {
-        matchedTokenId = candidate.id
-        matchedUserId = candidate.userId
-        break
-      }
-    }
-
-    if (matchedTokenId === null || matchedUserId === null) {
+    if (parsedToken === null) {
       throw new UnauthorizedError('Invalid or expired reset token')
     }
+
+    const candidateToken = await this.authUnitOfWork.run(
+      async ({ oneTimeTokenRepository }) =>
+        oneTimeTokenRepository.findActiveById(
+          parsedToken.tokenId,
+          'password_reset',
+        ),
+    )
+
+    if (
+      candidateToken === null ||
+      !(await argon2.verify(candidateToken.tokenHash, parsedToken.secret))
+    ) {
+      throw new UnauthorizedError('Invalid or expired reset token')
+    }
+
+    const matchedTokenId = candidateToken.id
+    const matchedUserId = candidateToken.userId
 
     const credential =
       await this.userCredentialRepository.findByUserId(matchedUserId)
@@ -63,7 +68,11 @@ export class ResetPasswordUseCase {
       }) => {
         await acquireUserMutationLock(matchedUserId)
 
-        await oneTimeTokenRepository.markAsUsed(matchedTokenId, passwordChangedAt)
+        await oneTimeTokenRepository.markAsUsed(
+          matchedTokenId,
+          'password_reset',
+          passwordChangedAt,
+        )
         await userCredentialRepository.updatePassword({
           userId: matchedUserId,
           passwordHash,

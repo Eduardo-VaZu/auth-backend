@@ -13,10 +13,12 @@ import { TYPES } from './container/types.js'
 import type { AppRedisClient } from './infrastructure/redis.js'
 import { createAuthRouter } from './modules/access/infrastructure/routes/auth.routes.js'
 import { createAdminRouter } from './modules/admin/infrastructure/routes/admin.routes.js'
+import { createAuditRouter } from './modules/audit/infrastructure/routes/audit.routes.js'
 import { createIdentityRouter } from './modules/identity/infrastructure/routes/identity.routes.js'
 import { createCredentialsRouter } from './modules/credentials/infrastructure/routes/credentials.routes.js'
 import { createHealthRouter } from './modules/health/routes/health.routes.js'
 import {
+  ForbiddenError,
   TooManyRequestsError,
   NotFoundError,
 } from './shared/errors/HttpErrors.js'
@@ -61,7 +63,7 @@ export const createApp = (container: Container): Express => {
         if (!origin || env.CORS_ORIGIN.includes(origin)) {
           callback(null, true)
         } else {
-          callback(new Error('Not allowed by CORS'))
+          callback(new ForbiddenError('Origin is not allowed by CORS policy'))
         }
       },
       credentials: true,
@@ -78,6 +80,7 @@ export const createApp = (container: Container): Express => {
   app.use('/auth', createCredentialsRouter(container))
   app.use('/auth', createAuthRouter(container))
   app.use('/admin', createAdminRouter(container))
+  app.use('/admin', createAuditRouter(container))
 
   app.use((_request, _response, next) => {
     next(new NotFoundError('Route not found'))

@@ -5,6 +5,7 @@ import { TYPES } from '../../../../container/types.js'
 import { UnauthorizedError } from '../../../../shared/errors/HttpErrors.js'
 import type { IAuthUnitOfWork } from '../../../../shared/domain/services/IAuthUnitOfWork.js'
 import type { VerifyEmailInputDto } from '../dtos/CredentialDtos.js'
+import { parseOneTimeToken } from '../utils/parseOneTimeToken.js'
 
 @injectable()
 export class VerifyEmailUseCase {
@@ -14,25 +15,29 @@ export class VerifyEmailUseCase {
   ) {}
 
   public async execute(input: VerifyEmailInputDto): Promise<void> {
-    const candidateTokens = await this.authUnitOfWork.run(
-      async ({ oneTimeTokenRepository }) =>
-        oneTimeTokenRepository.findActiveByType('email_verification'),
-    )
+    const parsedToken = parseOneTimeToken(input.token)
 
-    let matchedTokenId: string | null = null
-    let matchedUserId: string | null = null
-
-    for (const candidate of candidateTokens) {
-      if (await argon2.verify(candidate.tokenHash, input.token)) {
-        matchedTokenId = candidate.id
-        matchedUserId = candidate.userId
-        break
-      }
-    }
-
-    if (matchedTokenId === null || matchedUserId === null) {
+    if (parsedToken === null) {
       throw new UnauthorizedError('Invalid or expired verification token')
     }
+
+    const candidateToken = await this.authUnitOfWork.run(
+      async ({ oneTimeTokenRepository }) =>
+        oneTimeTokenRepository.findActiveById(
+          parsedToken.tokenId,
+          'email_verification',
+        ),
+    )
+
+    if (
+      candidateToken === null ||
+      !(await argon2.verify(candidateToken.tokenHash, parsedToken.secret))
+    ) {
+      throw new UnauthorizedError('Invalid or expired verification token')
+    }
+
+    const matchedTokenId = candidateToken.id
+    const matchedUserId = candidateToken.userId
 
     await this.authUnitOfWork.run(
       async ({
@@ -51,7 +56,11 @@ export class VerifyEmailUseCase {
 
         const verifiedAt = new Date()
 
-        await oneTimeTokenRepository.markAsUsed(matchedTokenId, verifiedAt)
+        await oneTimeTokenRepository.markAsUsed(
+          matchedTokenId,
+          'email_verification',
+          verifiedAt,
+        )
 
         if (user.emailVerifiedAt === null) {
           await userRepository.markEmailAsVerified(matchedUserId, verifiedAt)

@@ -6,6 +6,7 @@ import { validateBody } from '../../../../shared/middlewares/validateBody.js'
 import { createAuthenticate } from '../../../../shared/middlewares/authenticate.js'
 import type { CredentialsController } from '../controllers/CredentialsController.js'
 import {
+  changeEmailSchema,
   changePasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
@@ -58,6 +59,15 @@ export const createCredentialsRouter = (container: Container): Router => {
     validateBody(changePasswordSchema),
     (request, response, next) => {
       Promise.resolve(controller.changePassword(request, response)).catch(next)
+    },
+  )
+
+  router.patch(
+    '/me/email',
+    authenticate,
+    validateBody(changeEmailSchema),
+    (request, response, next) => {
+      Promise.resolve(controller.changeEmail(request, response)).catch(next)
     },
   )
 

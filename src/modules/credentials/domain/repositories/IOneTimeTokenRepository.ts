@@ -10,9 +10,10 @@ export interface CreateOneTimeTokenParams {
 
 export interface IOneTimeTokenRepository {
   create(params: CreateOneTimeTokenParams): Promise<OneTimeToken>
-  findActiveByType(
+  findActiveById(
+    id: string,
     type: OneTimeTokenType,
     referenceDate?: Date,
-  ): Promise<OneTimeToken[]>
-  markAsUsed(id: string, usedAt?: Date): Promise<void>
+  ): Promise<OneTimeToken | null>
+  markAsUsed(id: string, type: OneTimeTokenType, usedAt?: Date): Promise<void>
 }

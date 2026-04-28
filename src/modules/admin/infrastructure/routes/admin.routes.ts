@@ -9,7 +9,7 @@ import { createAuthenticate } from '../../../../shared/middlewares/authenticate.
 import { ForbiddenError } from '../../../../shared/errors/HttpErrors.js'
 import { validateBody } from '../../../../shared/middlewares/validateBody.js'
 import type { AdminController } from '../controllers/AdminController.js'
-import { assignUserRoleSchema } from './admin.schemas.js'
+import { assignUserRoleSchema, updateUserStatusSchema } from './admin.schemas.js'
 
 const requireAdmin: RequestHandler = (request, _response, next) => {
   if (request.user?.roles.includes('admin') !== true) {
@@ -38,6 +38,26 @@ export const createAdminRouter = (container: Container): Router => {
 
   router.get('/roles', (request, response, next) => {
     Promise.resolve(controller.listRoles(request, response)).catch(next)
+  })
+
+  router.get('/users', (request, response, next) => {
+    Promise.resolve(controller.listUsers(request, response)).catch(next)
+  })
+
+  router.get('/users/:userId', (request, response, next) => {
+    Promise.resolve(controller.getUserProfile(request, response)).catch(next)
+  })
+
+  router.patch(
+    '/users/:userId/status',
+    validateBody(updateUserStatusSchema),
+    (request, response, next) => {
+      Promise.resolve(controller.updateUserStatus(request, response)).catch(next)
+    },
+  )
+
+  router.delete('/users/:userId', (request, response, next) => {
+    Promise.resolve(controller.softDeleteUser(request, response)).catch(next)
   })
 
   router.get('/users/:userId/roles', (request, response, next) => {

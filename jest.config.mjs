@@ -1,8 +1,9 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
-const config = {
+const baseProjectConfig = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
+  cacheDirectory: '<rootDir>/.jest-cache',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',
@@ -16,7 +17,10 @@ const config = {
     ],
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-  cacheDirectory: '<rootDir>/.jest-cache',
+}
+
+const config = {
+  verbose: true,
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/main/**',
@@ -24,9 +28,38 @@ const config = {
     '!src/types/**',
     '!src/infrastructure/db/migrations/**',
   ],
-  roots: ['<rootDir>/tests'],
-  testMatch: ['**/*.test.ts'],
-  verbose: true,
+  coverageThreshold: {
+    global: {
+      branches: 40,
+      functions: 40,
+      lines: 45,
+      statements: 45,
+    },
+    './src/modules/identity/domain/**': {
+      branches: 90,
+      functions: 90,
+      lines: 90,
+    },
+    './src/modules/access/domain/**': {
+      branches: 90,
+      functions: 90,
+      lines: 90,
+    },
+  },
+  projects: [
+    {
+      ...baseProjectConfig,
+      displayName: 'unit',
+      roots: ['<rootDir>/tests'],
+      testMatch: ['**/unit/**/*.test.ts'],
+    },
+    {
+      ...baseProjectConfig,
+      displayName: 'integration',
+      roots: ['<rootDir>/tests'],
+      testMatch: ['**/integration/**/*.test.ts'],
+    },
+  ],
 }
 
 export default config

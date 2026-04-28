@@ -7,7 +7,14 @@ import {
   type DatabaseExecutor,
   type DatabaseExecutorSource,
 } from '../../../../infrastructure/db/db.js'
-import * as schema from '../../../../infrastructure/db/schema/index.js'
+import {
+  emailVerificationTokens,
+  type EmailVerificationTokenRow,
+} from '../../../../infrastructure/db/schema/email_verification_tokens.js'
+import {
+  passwordResetTokens,
+  type PasswordResetTokenRow,
+} from '../../../../infrastructure/db/schema/password_reset_tokens.js'
 import { InternalError } from '../../../../shared/errors/HttpErrors.js'
 import {
   OneTimeToken,
@@ -31,13 +38,29 @@ export class OneTimeTokenRepository implements IOneTimeTokenRepository {
   }
 
   public async create(params: CreateOneTimeTokenParams): Promise<OneTimeToken> {
+    if (params.type === 'password_reset') {
+      const [token] = await this.database
+        .insert(passwordResetTokens)
+        .values({
+          userId: params.userId,
+          tokenHash: params.tokenHash,
+          requestedByIp: params.requestedByIp,
+          expiresAt: params.expiresAt,
+        })
+        .returning()
+
+      if (token === undefined) {
+        throw new InternalError('Failed to create one-time token')
+      }
+
+      return this.mapPasswordResetTokenToEntity(token)
+    }
+
     const [token] = await this.database
-      .insert(schema.oneTimeTokens)
+      .insert(emailVerificationTokens)
       .values({
         userId: params.userId,
-        type: params.type,
         tokenHash: params.tokenHash,
-        requestedByIp: params.requestedByIp,
         expiresAt: params.expiresAt,
       })
       .returning()
@@ -46,45 +69,95 @@ export class OneTimeTokenRepository implements IOneTimeTokenRepository {
       throw new InternalError('Failed to create one-time token')
     }
 
-    return this.mapToEntity(token)
+    return this.mapEmailVerificationTokenToEntity(token)
   }
 
-  public async findActiveByType(
+  public async findActiveById(
+    id: string,
     type: OneTimeTokenType,
     referenceDate = new Date(),
-  ): Promise<OneTimeToken[]> {
-    const rows = await this.database
+  ): Promise<OneTimeToken | null> {
+    if (type === 'password_reset') {
+      const [row] = await this.database
+        .select()
+        .from(passwordResetTokens)
+        .where(
+          and(
+            eq(passwordResetTokens.id, id),
+            isNull(passwordResetTokens.usedAt),
+            gt(passwordResetTokens.expiresAt, referenceDate),
+          ),
+        )
+        .limit(1)
+
+      return row === undefined ? null : this.mapPasswordResetTokenToEntity(row)
+    }
+
+    const [row] = await this.database
       .select()
-      .from(schema.oneTimeTokens)
+      .from(emailVerificationTokens)
       .where(
         and(
-          eq(schema.oneTimeTokens.type, type),
-          isNull(schema.oneTimeTokens.usedAt),
-          gt(schema.oneTimeTokens.expiresAt, referenceDate),
+          eq(emailVerificationTokens.id, id),
+          isNull(emailVerificationTokens.usedAt),
+          gt(emailVerificationTokens.expiresAt, referenceDate),
         ),
       )
+      .limit(1)
 
-    return rows.map((row) => this.mapToEntity(row))
+    return row === undefined ? null : this.mapEmailVerificationTokenToEntity(row)
   }
 
-  public async markAsUsed(id: string, usedAt = new Date()): Promise<void> {
+  public async markAsUsed(
+    id: string,
+    type: OneTimeTokenType,
+    usedAt = new Date(),
+  ): Promise<void> {
+    if (type === 'password_reset') {
+      await this.database
+        .update(passwordResetTokens)
+        .set({
+          usedAt,
+        })
+        .where(eq(passwordResetTokens.id, id))
+
+      return
+    }
+
     await this.database
-      .update(schema.oneTimeTokens)
+      .update(emailVerificationTokens)
       .set({
         usedAt,
       })
-      .where(eq(schema.oneTimeTokens.id, id))
+      .where(eq(emailVerificationTokens.id, id))
   }
 
-  private mapToEntity(
-    row: typeof schema.oneTimeTokens.$inferSelect,
+  private mapPasswordResetTokenToEntity(
+    row: PasswordResetTokenRow,
   ): OneTimeToken {
     const props: OneTimeTokenProps = {
       id: row.id,
       userId: row.userId,
-      type: row.type as OneTimeTokenType,
+      type: 'password_reset',
       tokenHash: row.tokenHash,
       requestedByIp: row.requestedByIp ?? null,
+      expiresAt: row.expiresAt,
+      usedAt: row.usedAt ?? null,
+      createdAt: row.createdAt,
+    }
+
+    return new OneTimeToken(props)
+  }
+
+  private mapEmailVerificationTokenToEntity(
+    row: EmailVerificationTokenRow,
+  ): OneTimeToken {
+    const props: OneTimeTokenProps = {
+      id: row.id,
+      userId: row.userId,
+      type: 'email_verification',
+      tokenHash: row.tokenHash,
+      requestedByIp: null,
       expiresAt: row.expiresAt,
       usedAt: row.usedAt ?? null,
       createdAt: row.createdAt,

@@ -23,6 +23,8 @@ export const validateBody = <TSchema extends ZodTypeAny>(
       return
     }
 
+    const sanitizedBody = parsedBody.data as unknown
+    request.body = sanitizedBody
     next()
   }
 }

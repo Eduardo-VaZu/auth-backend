@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
-import { injectable } from 'inversify'
+import { inject, injectable } from 'inversify'
+import type { Logger } from 'pino'
 
 import { db, type AppTransaction } from '../../../infrastructure/db/db.js'
 import { RefreshTokenRepository } from '../../../modules/access/infrastructure/repositories/RefreshTokenRepository.js'
@@ -14,9 +15,15 @@ import type {
   AuthRepositories,
   IAuthUnitOfWork,
 } from '../../domain/services/IAuthUnitOfWork.js'
+import { TYPES } from '../../../container/types.js'
 
 @injectable()
 export class AuthUnitOfWork implements IAuthUnitOfWork {
+  public constructor(
+    @inject(TYPES.Logger)
+    private readonly logger: Logger,
+  ) {}
+
   public async run<T>(
     callback: (repositories: AuthRepositories) => Promise<T>,
   ): Promise<T> {
@@ -28,7 +35,7 @@ export class AuthUnitOfWork implements IAuthUnitOfWork {
       const roleRepository = new RoleRepository(transaction)
       const userRoleRepository = new UserRoleRepository(transaction)
       const userSessionRepository = new UserSessionRepository(transaction)
-      const authAuditService = new AuthAuditService(transaction)
+      const authAuditService = new AuthAuditService(transaction, this.logger)
 
       const acquireUserMutationLock = async (userId: string): Promise<void> => {
         await transaction.execute(

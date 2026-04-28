@@ -1,4 +1,4 @@
-import { and, asc, eq, isNull } from 'drizzle-orm'
+import { and, asc, count, desc, eq, ilike, isNull, sql, type SQL } from 'drizzle-orm'
 import { inject, injectable } from 'inversify'
 
 import { TYPES } from '../../../../container/types.js'
@@ -12,6 +12,11 @@ import { InternalError } from '../../../../shared/errors/HttpErrors.js'
 import type {
   CreateUserParams,
   IUserRepository,
+  ListUsersPaginatedParams,
+  ListUsersPaginatedResult,
+  SoftDeleteUserParams,
+  UpdateUserEmailForReverificationParams,
+  UpdateUserStatusParams,
 } from '../../domain/repositories/IUserRepository.js'
 import {
   User,
@@ -104,6 +109,119 @@ export class UserRepository implements IUserRepository {
         status: 'active',
       })
       .where(eq(schema.users.id, userId))
+  }
+
+  public async listPaginated(
+    params: ListUsersPaginatedParams,
+  ): Promise<ListUsersPaginatedResult> {
+    const filters: SQL<unknown>[] = []
+
+    if (params.status !== undefined) {
+      filters.push(eq(schema.users.status, params.status))
+    }
+
+    if (params.search !== undefined) {
+      filters.push(ilike(schema.users.email, `%${params.search}%`))
+    }
+
+    const whereClause = filters.length === 0 ? undefined : and(...filters)
+
+    const [totalRows, userRows] = await Promise.all([
+      this.database
+        .select({
+          count: count(),
+        })
+        .from(schema.users)
+        .where(whereClause),
+      this.database
+        .select()
+        .from(schema.users)
+        .where(whereClause)
+        .orderBy(desc(schema.users.createdAt))
+        .limit(params.limit)
+        .offset(params.offset),
+    ])
+
+    const usersWithRoles = await Promise.all(
+      userRows.map(async (userRow) => {
+        const roles = await this.findActiveRolesByUserId(userRow.id)
+
+        return this.mapToEntity(userRow, roles)
+      }),
+    )
+
+    return {
+      users: usersWithRoles,
+      total: totalRows[0] === undefined ? 0 : Number(totalRows[0].count),
+    }
+  }
+
+  public async updateStatus(params: UpdateUserStatusParams): Promise<User | null> {
+    const updatedAt = params.updatedAt ?? new Date()
+    const [row] = await this.database
+      .update(schema.users)
+      .set({
+        status: params.status,
+        updatedAt,
+        authzVersion: sql`${schema.users.authzVersion} + 1`,
+      })
+      .where(eq(schema.users.id, params.userId))
+      .returning()
+
+    if (row === undefined) {
+      return null
+    }
+
+    const roles = await this.findActiveRolesByUserId(row.id)
+
+    return this.mapToEntity(row, roles)
+  }
+
+  public async softDelete(params: SoftDeleteUserParams): Promise<User | null> {
+    const deletedAt = params.deletedAt ?? new Date()
+    const [row] = await this.database
+      .update(schema.users)
+      .set({
+        deletedAt,
+        status: 'disabled',
+        updatedAt: deletedAt,
+        authzVersion: sql`${schema.users.authzVersion} + 1`,
+      })
+      .where(eq(schema.users.id, params.userId))
+      .returning()
+
+    if (row === undefined) {
+      return null
+    }
+
+    const roles = await this.findActiveRolesByUserId(row.id)
+
+    return this.mapToEntity(row, roles)
+  }
+
+  public async updateEmailForReverification(
+    params: UpdateUserEmailForReverificationParams,
+  ): Promise<User | null> {
+    const updatedAt = params.updatedAt ?? new Date()
+    const [row] = await this.database
+      .update(schema.users)
+      .set({
+        email: params.email,
+        emailVerifiedAt: null,
+        status: 'pending_verification',
+        updatedAt,
+        authzVersion: sql`${schema.users.authzVersion} + 1`,
+      })
+      .where(eq(schema.users.id, params.userId))
+      .returning()
+
+    if (row === undefined) {
+      return null
+    }
+
+    const roles = await this.findActiveRolesByUserId(row.id)
+
+    return this.mapToEntity(row, roles)
   }
 
   private async findActiveRolesByUserId(userId: string): Promise<UserRole[]> {
