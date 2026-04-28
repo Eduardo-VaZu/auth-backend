@@ -35,8 +35,10 @@
     "test:ci": "npm run test:unit:ci && npm run test:integration:ci",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./jest.config.mjs --watch",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./jest.config.mjs --coverage",
+    "sonar:scan": "npx sonar-scanner",
     "docker:build": "docker build -t auth-backend .",
     "docker:up:d": "docker compose up -d postgres redis",
+    "docker:up:sonarqube": "docker compose --profile observability up -d sonarqube-db sonarqube",
     "docker:up:full": "docker compose --profile fullstack up -d --build",
     "docker:down": "docker compose down --volumes --remove-orphans",
     "dev:local": "npm run docker:up:d && npm run dev"
