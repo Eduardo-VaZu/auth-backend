@@ -1,4 +1,7 @@
-import type { OneTimeToken, OneTimeTokenType } from '../entities/OneTimeToken.js'
+import type {
+  OneTimeToken,
+  OneTimeTokenType,
+} from '../entities/OneTimeToken.js'
 
 export interface CreateOneTimeTokenParams {
   userId: string

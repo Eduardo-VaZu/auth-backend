@@ -72,7 +72,10 @@ export class CredentialsController {
     request: Request,
     response: Response,
   ): Promise<void> {
-    const body = request.body as Pick<ResetPasswordInputDto, 'token' | 'newPassword'>
+    const body = request.body as Pick<
+      ResetPasswordInputDto,
+      'token' | 'newPassword'
+    >
 
     await this.resetPasswordUseCase.execute({
       token: body.token,
@@ -87,7 +90,10 @@ export class CredentialsController {
     })
   }
 
-  public async verifyEmail(request: Request, response: Response): Promise<void> {
+  public async verifyEmail(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
     const body = request.body as Pick<VerifyEmailInputDto, 'token'>
 
     await this.verifyEmailUseCase.execute({
@@ -120,7 +126,10 @@ export class CredentialsController {
     })
   }
 
-  public async changePassword(request: Request, response: Response): Promise<void> {
+  public async changePassword(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
     const body = request.body as Pick<
       ChangePasswordInputDto,
       'currentPassword' | 'newPassword'
@@ -142,7 +151,10 @@ export class CredentialsController {
     })
   }
 
-  public async changeEmail(request: Request, response: Response): Promise<void> {
+  public async changeEmail(
+    request: Request,
+    response: Response,
+  ): Promise<void> {
     const body = request.body as Pick<ChangeEmailInputDto, 'email'>
 
     await this.changeEmailUseCase.execute({

@@ -17,9 +17,9 @@ import { UserRoleRepository } from './infrastructure/repositories/UserRoleReposi
 
 export const configureAdminModule = (container: Container): void => {
   container.bind<IRoleRepository>(TYPES.IRoleRepository).to(RoleRepository)
-  container.bind<IUserRoleRepository>(TYPES.IUserRoleRepository).to(
-    UserRoleRepository,
-  )
+  container
+    .bind<IUserRoleRepository>(TYPES.IUserRoleRepository)
+    .to(UserRoleRepository)
 
   container.bind<ListRolesUseCase>(TYPES.ListRolesUseCase).to(ListRolesUseCase)
   container.bind<ListUsersUseCase>(TYPES.ListUsersUseCase).to(ListUsersUseCase)

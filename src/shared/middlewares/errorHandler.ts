@@ -3,8 +3,17 @@ import type { Logger } from 'pino'
 
 import { env } from '../../config/env.js'
 import { AppError } from '../errors/AppError.js'
-import { ConflictError, UnauthorizedError, InternalError } from '../errors/HttpErrors.js'
-import { DomainError, UserAlreadyExistsError, InvalidCredentialsError, SecurityBreachError } from '../domain/errors/DomainErrors.js'
+import {
+  ConflictError,
+  UnauthorizedError,
+  InternalError,
+} from '../errors/HttpErrors.js'
+import {
+  DomainError,
+  UserAlreadyExistsError,
+  InvalidCredentialsError,
+  SecurityBreachError,
+} from '../domain/errors/DomainErrors.js'
 
 interface ErrorBody {
   error: {
@@ -25,7 +34,7 @@ const mapDomainToHttpError = (error: DomainError): AppError => {
   if (error instanceof SecurityBreachError) {
     return new UnauthorizedError(error.message)
   }
-  
+
   return new InternalError(error.message)
 }
 
@@ -47,7 +56,9 @@ export const createErrorHandler = (logger: Logger): ErrorRequestHandler => {
           code: finalError.code,
           message: finalError.message,
           requestId,
-          ...(finalError.details === undefined ? {} : { details: finalError.details }),
+          ...(finalError.details === undefined
+            ? {}
+            : { details: finalError.details }),
         },
       }
 

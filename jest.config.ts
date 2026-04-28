@@ -23,8 +23,8 @@ export default {
     '!src/main/**',
     '!src/config/**',
     '!src/types/**',
-    '!src/infrastructure/db/migrations/**'
+    '!src/infrastructure/db/migrations/**',
   ],
   testMatch: ['**/*.test.ts'],
-  verbose: true
-};
+  verbose: true,
+}

@@ -9,7 +9,10 @@ import { createAuthenticate } from '../../../../shared/middlewares/authenticate.
 import { ForbiddenError } from '../../../../shared/errors/HttpErrors.js'
 import { validateBody } from '../../../../shared/middlewares/validateBody.js'
 import type { AdminController } from '../controllers/AdminController.js'
-import { assignUserRoleSchema, updateUserStatusSchema } from './admin.schemas.js'
+import {
+  assignUserRoleSchema,
+  updateUserStatusSchema,
+} from './admin.schemas.js'
 
 const requireAdmin: RequestHandler = (request, _response, next) => {
   if (request.user?.roles.includes('admin') !== true) {
@@ -52,7 +55,9 @@ export const createAdminRouter = (container: Container): Router => {
     '/users/:userId/status',
     validateBody(updateUserStatusSchema),
     (request, response, next) => {
-      Promise.resolve(controller.updateUserStatus(request, response)).catch(next)
+      Promise.resolve(controller.updateUserStatus(request, response)).catch(
+        next,
+      )
     },
   )
 

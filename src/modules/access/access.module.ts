@@ -33,9 +33,15 @@ export const configureAccessModule = (container: Container): void => {
     .to(SecurityThrottleService)
 
   container.bind<LoginUseCase>(TYPES.LoginUseCase).to(LoginUseCase)
-  container.bind<ListSessionsUseCase>(TYPES.ListSessionsUseCase).to(ListSessionsUseCase)
-  container.bind<RevokeSessionUseCase>(TYPES.RevokeSessionUseCase).to(RevokeSessionUseCase)
-  container.bind<RefreshTokenUseCase>(TYPES.RefreshTokenUseCase).to(RefreshTokenUseCase)
+  container
+    .bind<ListSessionsUseCase>(TYPES.ListSessionsUseCase)
+    .to(ListSessionsUseCase)
+  container
+    .bind<RevokeSessionUseCase>(TYPES.RevokeSessionUseCase)
+    .to(RevokeSessionUseCase)
+  container
+    .bind<RefreshTokenUseCase>(TYPES.RefreshTokenUseCase)
+    .to(RefreshTokenUseCase)
   container.bind<LogoutUseCase>(TYPES.LogoutUseCase).to(LogoutUseCase)
   container.bind<LogoutAllUseCase>(TYPES.LogoutAllUseCase).to(LogoutAllUseCase)
 

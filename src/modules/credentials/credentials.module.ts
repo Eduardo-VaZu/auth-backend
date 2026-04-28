@@ -20,25 +20,25 @@ export const configureCredentialsModule = (container: Container): void => {
   container
     .bind<IOneTimeTokenRepository>(TYPES.IOneTimeTokenRepository)
     .to(OneTimeTokenRepository)
-  container.bind<ChangePasswordUseCase>(TYPES.ChangePasswordUseCase).to(
-    ChangePasswordUseCase,
-  )
-  container.bind<ChangeEmailUseCase>(TYPES.ChangeEmailUseCase).to(
-    ChangeEmailUseCase,
-  )
-  container.bind<ForgotPasswordUseCase>(TYPES.ForgotPasswordUseCase).to(
-    ForgotPasswordUseCase,
-  )
-  container.bind<ResetPasswordUseCase>(TYPES.ResetPasswordUseCase).to(
-    ResetPasswordUseCase,
-  )
-  container.bind<VerifyEmailUseCase>(TYPES.VerifyEmailUseCase).to(
-    VerifyEmailUseCase,
-  )
-  container.bind<ResendVerificationUseCase>(TYPES.ResendVerificationUseCase).to(
-    ResendVerificationUseCase,
-  )
-  container.bind<CredentialsController>(TYPES.CredentialsController).to(
-    CredentialsController,
-  )
+  container
+    .bind<ChangePasswordUseCase>(TYPES.ChangePasswordUseCase)
+    .to(ChangePasswordUseCase)
+  container
+    .bind<ChangeEmailUseCase>(TYPES.ChangeEmailUseCase)
+    .to(ChangeEmailUseCase)
+  container
+    .bind<ForgotPasswordUseCase>(TYPES.ForgotPasswordUseCase)
+    .to(ForgotPasswordUseCase)
+  container
+    .bind<ResetPasswordUseCase>(TYPES.ResetPasswordUseCase)
+    .to(ResetPasswordUseCase)
+  container
+    .bind<VerifyEmailUseCase>(TYPES.VerifyEmailUseCase)
+    .to(VerifyEmailUseCase)
+  container
+    .bind<ResendVerificationUseCase>(TYPES.ResendVerificationUseCase)
+    .to(ResendVerificationUseCase)
+  container
+    .bind<CredentialsController>(TYPES.CredentialsController)
+    .to(CredentialsController)
 }

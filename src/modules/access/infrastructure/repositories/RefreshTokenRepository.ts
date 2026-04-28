@@ -21,7 +21,10 @@ import {
 import * as schema from '../../../../infrastructure/db/schema/index.js'
 import { InternalError } from '../../../../shared/errors/HttpErrors.js'
 import { appLogger } from '../../../../shared/logger/logger.js'
-import { isUuid, logInvalidUuidDiscard } from '../../../../shared/utils/isUuid.js'
+import {
+  isUuid,
+  logInvalidUuidDiscard,
+} from '../../../../shared/utils/isUuid.js'
 import {
   RefreshToken,
   type RefreshTokenProps,

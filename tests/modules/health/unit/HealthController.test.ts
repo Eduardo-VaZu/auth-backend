@@ -60,7 +60,8 @@ describe('HealthController', () => {
     expect(response.status).toHaveBeenCalledWith(200)
     expect(response.json).toHaveBeenCalledTimes(1)
 
-    const payload = (response.json as jest.Mock).mock.calls[0][0] as JsonResponse
+    const payload = (response.json as jest.Mock).mock
+      .calls[0][0] as JsonResponse
 
     expect(payload.status).toBe('ok')
     expect(payload.timestamp).toEqual(expect.any(String))
@@ -95,7 +96,8 @@ describe('HealthController', () => {
     expect(response.status).toHaveBeenCalledWith(503)
     expect(response.json).toHaveBeenCalledTimes(1)
 
-    const payload = (response.json as jest.Mock).mock.calls[0][0] as JsonResponse
+    const payload = (response.json as jest.Mock).mock
+      .calls[0][0] as JsonResponse
 
     expect(payload.status).toBe('degraded')
     expect(payload.dependencies).toEqual({

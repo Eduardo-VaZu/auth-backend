@@ -9,5 +9,7 @@ import { IdentityController } from './infrastructure/controllers/IdentityControl
 export const configureIdentityModule = (container: Container): void => {
   container.bind<IUserRepository>(TYPES.IUserRepository).to(UserRepository)
   container.bind<RegisterUseCase>(TYPES.RegisterUseCase).to(RegisterUseCase)
-  container.bind<IdentityController>(TYPES.IdentityController).to(IdentityController)
+  container
+    .bind<IdentityController>(TYPES.IdentityController)
+    .to(IdentityController)
 }

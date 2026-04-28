@@ -67,7 +67,9 @@ export class SecurityThrottleService implements ISecurityThrottleService {
     const ipAttempts =
       ipAddress === null
         ? 0
-        : await this.incrementCounter(redisKeys.throttle.loginIpAttempts(ipAddress))
+        : await this.incrementCounter(
+            redisKeys.throttle.loginIpAttempts(ipAddress),
+          )
 
     const accountLockTtlSeconds =
       accountAttempts >= ACCOUNT_LOCK_THRESHOLD

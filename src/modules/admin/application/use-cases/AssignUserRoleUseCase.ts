@@ -97,7 +97,8 @@ export class AssignUserRoleUseCase {
     await this.sessionStore.deleteAllRefreshTokens(input.targetUserId)
 
     const clearAuthCookies =
-      decodedAccessToken !== null && decodedAccessToken.userId === input.targetUserId
+      decodedAccessToken !== null &&
+      decodedAccessToken.userId === input.targetUserId
 
     if (clearAuthCookies) {
       const ttlSeconds = Math.max(

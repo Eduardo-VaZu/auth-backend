@@ -18,12 +18,20 @@ import type { IUserSessionRepository } from '../../../access/domain/repositories
 
 export const createCredentialsRouter = (container: Container): Router => {
   const router = Router()
-  const controller = container.get<CredentialsController>(TYPES.CredentialsController)
-  
+  const controller = container.get<CredentialsController>(
+    TYPES.CredentialsController,
+  )
+
   const tokenService = container.get<ITokenService>(TYPES.ITokenService)
   const sessionStore = container.get<ISessionStore>(TYPES.ISessionStore)
-  const userSessionRepository = container.get<IUserSessionRepository>(TYPES.IUserSessionRepository)
-  const authenticate = createAuthenticate(tokenService, sessionStore, userSessionRepository)
+  const userSessionRepository = container.get<IUserSessionRepository>(
+    TYPES.IUserSessionRepository,
+  )
+  const authenticate = createAuthenticate(
+    tokenService,
+    sessionStore,
+    userSessionRepository,
+  )
 
   router.post(
     '/forgot-password',
@@ -49,9 +57,15 @@ export const createCredentialsRouter = (container: Container): Router => {
     },
   )
 
-  router.post('/resend-verification', authenticate, (request, response, next) => {
-    Promise.resolve(controller.resendVerification(request, response)).catch(next)
-  })
+  router.post(
+    '/resend-verification',
+    authenticate,
+    (request, response, next) => {
+      Promise.resolve(controller.resendVerification(request, response)).catch(
+        next,
+      )
+    },
+  )
 
   router.post(
     '/change-password',

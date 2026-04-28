@@ -66,7 +66,9 @@ export class RevokeUserRoleUseCase {
         }
 
         if (activeRoles.length <= 1) {
-          throw new ConflictError('Cannot revoke the last active role from a user')
+          throw new ConflictError(
+            'Cannot revoke the last active role from a user',
+          )
         }
 
         const wasRevoked = await userRoleRepository.revokeActiveRole(
@@ -109,7 +111,8 @@ export class RevokeUserRoleUseCase {
     await this.sessionStore.deleteAllRefreshTokens(input.targetUserId)
 
     const clearAuthCookies =
-      decodedAccessToken !== null && decodedAccessToken.userId === input.targetUserId
+      decodedAccessToken !== null &&
+      decodedAccessToken.userId === input.targetUserId
 
     if (clearAuthCookies) {
       const ttlSeconds = Math.max(

@@ -7,7 +7,9 @@ import { AuditController } from './infrastructure/controllers/AuditController.js
 import { AuthAuditService } from './infrastructure/services/AuthAuditService.js'
 
 export const configureAuditModule = (container: Container): void => {
-  container.bind<IAuthAuditService>(TYPES.IAuthAuditService).to(AuthAuditService)
+  container
+    .bind<IAuthAuditService>(TYPES.IAuthAuditService)
+    .to(AuthAuditService)
   container
     .bind<ListAuditLogsUseCase>(TYPES.ListAuditLogsUseCase)
     .to(ListAuditLogsUseCase)

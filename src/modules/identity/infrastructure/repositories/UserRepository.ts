@@ -1,4 +1,14 @@
-import { and, asc, count, desc, eq, ilike, isNull, sql, type SQL } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  ilike,
+  isNull,
+  sql,
+  type SQL,
+} from 'drizzle-orm'
 import { inject, injectable } from 'inversify'
 
 import { TYPES } from '../../../../container/types.js'
@@ -156,7 +166,9 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  public async updateStatus(params: UpdateUserStatusParams): Promise<User | null> {
+  public async updateStatus(
+    params: UpdateUserStatusParams,
+  ): Promise<User | null> {
     const updatedAt = params.updatedAt ?? new Date()
     const [row] = await this.database
       .update(schema.users)
@@ -242,7 +254,10 @@ export class UserRepository implements IUserRepository {
     return userRoleRows.map((row) => row.code as UserRole)
   }
 
-  private async assignRoleToUser(userId: string, roleCode: UserRole): Promise<void> {
+  private async assignRoleToUser(
+    userId: string,
+    roleCode: UserRole,
+  ): Promise<void> {
     const [existingRole] = await this.database
       .select({
         id: schema.roles.id,
@@ -291,12 +306,10 @@ export class UserRepository implements IUserRepository {
       throw new InternalError('Failed to resolve user role')
     }
 
-    await this.database
-      .insert(schema.userRoles)
-      .values({
-        userId,
-        roleId,
-      })
+    await this.database.insert(schema.userRoles).values({
+      userId,
+      roleId,
+    })
   }
 
   private mapToEntity(

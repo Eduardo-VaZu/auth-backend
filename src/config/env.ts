@@ -9,7 +9,9 @@ const booleanStringSchema = z
 const envSchema = z.object({
   PORT: z.coerce.number().int().positive(),
   NODE_ENV: z.enum(['development', 'test', 'production']),
-  CORS_ORIGIN: z.string().transform((val) => val.split(',').map((url) => url.trim())),
+  CORS_ORIGIN: z
+    .string()
+    .transform((val) => val.split(',').map((url) => url.trim())),
   TRUST_PROXY: booleanStringSchema,
   DATABASE_URL: z.string().min(1),
   DB_POOL_MAX: z.coerce.number().int().positive(),

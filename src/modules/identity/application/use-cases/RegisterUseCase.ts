@@ -6,7 +6,10 @@ import { UserAlreadyExistsError } from '../../../../shared/domain/errors/DomainE
 import type { IAuthUnitOfWork } from '../../../../shared/domain/services/IAuthUnitOfWork.js'
 import { Email } from '../../domain/value-objects/Email.js'
 import { Password } from '../../../credentials/domain/value-objects/Password.js'
-import type { RegisterInputDto, RegisterResultDto } from '../../../access/application/dtos/AuthDtos.js'
+import type {
+  RegisterInputDto,
+  RegisterResultDto,
+} from '../../../access/application/dtos/AuthDtos.js'
 import { toAuthUserDto } from '../../../access/application/dtos/AuthDtos.js'
 
 @injectable()

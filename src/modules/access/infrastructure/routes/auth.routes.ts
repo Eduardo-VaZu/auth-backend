@@ -40,9 +40,13 @@ export const createAuthRouter = (container: Container): Router => {
     Promise.resolve(controller.sessions(request, response)).catch(next)
   })
 
-  router.delete('/sessions/:sessionId', authenticate, (request, response, next) => {
-    Promise.resolve(controller.revokeSession(request, response)).catch(next)
-  })
+  router.delete(
+    '/sessions/:sessionId',
+    authenticate,
+    (request, response, next) => {
+      Promise.resolve(controller.revokeSession(request, response)).catch(next)
+    },
+  )
 
   router.post('/logout', authenticate, (request, response, next) => {
     Promise.resolve(controller.logout(request, response)).catch(next)

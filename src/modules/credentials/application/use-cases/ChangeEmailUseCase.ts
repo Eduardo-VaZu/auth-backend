@@ -62,7 +62,9 @@ export class ChangeEmailUseCase {
         }
 
         if (user.email === nextEmail.value) {
-          throw new ConflictError('New email must be different from current email')
+          throw new ConflictError(
+            'New email must be different from current email',
+          )
         }
 
         const existingUser = await userRepository.findByEmail(nextEmail.value)

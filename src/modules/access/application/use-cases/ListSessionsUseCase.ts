@@ -27,7 +27,8 @@ export class ListSessionsUseCase {
         expiresAt: session.expiresAt.toISOString(),
         createdAt: session.createdAt.toISOString(),
         isCurrent:
-          currentSessionKey !== null && session.sessionKey === currentSessionKey,
+          currentSessionKey !== null &&
+          session.sessionKey === currentSessionKey,
       })),
     }
   }

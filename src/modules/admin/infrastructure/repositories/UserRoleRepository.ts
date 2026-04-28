@@ -10,7 +10,10 @@ import {
 } from '../../../../infrastructure/db/db.js'
 import * as schema from '../../../../infrastructure/db/schema/index.js'
 import { appLogger } from '../../../../shared/logger/logger.js'
-import { isUuid, logInvalidUuidDiscard } from '../../../../shared/utils/isUuid.js'
+import {
+  isUuid,
+  logInvalidUuidDiscard,
+} from '../../../../shared/utils/isUuid.js'
 import { Role } from '../../domain/entities/Role.js'
 import type {
   AssignUserRoleParams,
@@ -60,7 +63,9 @@ export class UserRoleRepository implements IUserRoleRepository {
     return rows.map(({ role }) => this.mapRole(role))
   }
 
-  public async assignActiveRole(params: AssignUserRoleParams): Promise<boolean> {
+  public async assignActiveRole(
+    params: AssignUserRoleParams,
+  ): Promise<boolean> {
     if (!isUuid(params.userId) || !isUuid(params.roleId)) {
       return false
     }

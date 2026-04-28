@@ -14,7 +14,9 @@ export class ListAuditLogsUseCase {
     private readonly authAuditService: IAuthAuditService,
   ) {}
 
-  public async execute(input: ListAuditLogsInputDto): Promise<ListAuditLogsResultDto> {
+  public async execute(
+    input: ListAuditLogsInputDto,
+  ): Promise<ListAuditLogsResultDto> {
     const offset = (input.page - 1) * input.limit
     const { events, total } = await this.authAuditService.listEvents({
       limit: input.limit,

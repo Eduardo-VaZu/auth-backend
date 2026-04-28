@@ -23,9 +23,7 @@ export const roles = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [
-    uniqueIndex('roles_code_unique_idx').on(table.code),
-  ],
+  (table) => [uniqueIndex('roles_code_unique_idx').on(table.code)],
 )
 
 export type RoleRow = typeof roles.$inferSelect

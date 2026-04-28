@@ -105,7 +105,9 @@ export class OneTimeTokenRepository implements IOneTimeTokenRepository {
       )
       .limit(1)
 
-    return row === undefined ? null : this.mapEmailVerificationTokenToEntity(row)
+    return row === undefined
+      ? null
+      : this.mapEmailVerificationTokenToEntity(row)
   }
 
   public async markAsUsed(

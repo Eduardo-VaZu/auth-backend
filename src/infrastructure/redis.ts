@@ -25,7 +25,8 @@ export const redisKeys = {
       `password-reset:ip:${ipAddress}`,
     passwordSprayingIp: (ipAddress: string): string =>
       `security:password-spraying:ip:${ipAddress}`,
-    accountLock: (identifier: string): string => `security:lock:account:${identifier}`,
+    accountLock: (identifier: string): string =>
+      `security:lock:account:${identifier}`,
     ipLock: (ipAddress: string): string => `security:lock:ip:${ipAddress}`,
   },
   tokens: {
@@ -198,7 +199,9 @@ export const getCachedAuthzSnapshot = async (
   return redisClient.get(redisKeys.cache.authzUser(userId))
 }
 
-export const deleteCachedAuthzSnapshot = async (userId: string): Promise<void> => {
+export const deleteCachedAuthzSnapshot = async (
+  userId: string,
+): Promise<void> => {
   await ensureRedisConnection()
   await redisClient.del(redisKeys.cache.authzUser(userId))
 }
@@ -248,7 +251,9 @@ export const acquireUserMutationLock = async (
   return result === 'OK'
 }
 
-export const releaseUserMutationLock = async (userId: string): Promise<void> => {
+export const releaseUserMutationLock = async (
+  userId: string,
+): Promise<void> => {
   await ensureRedisConnection()
   await redisClient.del(redisKeys.locks.userMutation(userId))
 }

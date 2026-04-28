@@ -8,12 +8,18 @@ export const listAuditLogsQuerySchema = z
     actorUserId: z.string().uuid().optional(),
     requestId: z.string().uuid().optional(),
     eventType: z.string().trim().min(1).max(128).optional(),
-    eventStatus: z.enum(['success', 'failure', 'blocked', 'incident']).optional(),
+    eventStatus: z
+      .enum(['success', 'failure', 'blocked', 'incident'])
+      .optional(),
     from: z.coerce.date().optional(),
     to: z.coerce.date().optional(),
   })
   .superRefine((value, context) => {
-    if (value.from !== undefined && value.to !== undefined && value.from > value.to) {
+    if (
+      value.from !== undefined &&
+      value.to !== undefined &&
+      value.from > value.to
+    ) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['to'],

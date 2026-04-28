@@ -108,4 +108,7 @@ export interface SoftDeleteUserInputDto {
 export interface SoftDeleteUserResultDto {
   clearAuthCookies: boolean
 }
-import type { UserRole, UserStatus } from '../../../identity/domain/entities/User.js'
+import type {
+  UserRole,
+  UserStatus,
+} from '../../../identity/domain/entities/User.js'

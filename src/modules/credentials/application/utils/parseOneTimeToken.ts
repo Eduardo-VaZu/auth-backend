@@ -6,9 +6,7 @@ export interface ParsedOneTimeToken {
   secret: string
 }
 
-export const parseOneTimeToken = (
-  token: string,
-): ParsedOneTimeToken | null => {
+export const parseOneTimeToken = (token: string): ParsedOneTimeToken | null => {
   const separatorIndex = token.indexOf('.')
   const hasSingleSeparator =
     separatorIndex > 0 &&

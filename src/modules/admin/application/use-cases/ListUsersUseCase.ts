@@ -15,7 +15,9 @@ export class ListUsersUseCase {
     private readonly userRepository: IUserRepository,
   ) {}
 
-  public async execute(input: ListAdminUsersInputDto): Promise<ListAdminUsersResultDto> {
+  public async execute(
+    input: ListAdminUsersInputDto,
+  ): Promise<ListAdminUsersResultDto> {
     const offset = (input.page - 1) * input.limit
     const { users, total } = await this.userRepository.listPaginated({
       limit: input.limit,
