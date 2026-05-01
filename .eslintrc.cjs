@@ -24,6 +24,7 @@ module.exports = {
     'node_modules/',
     '.eslintrc.cjs',
     'scripts/',
+    'vitest.config.mts',
   ],
   overrides: [
     {
