@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 
-import { afterEach, jest } from '@jest/globals'
+import { afterEach, vi } from 'vitest'
 
 afterEach(() => {
-  jest.restoreAllMocks()
+  vi.restoreAllMocks()
 })

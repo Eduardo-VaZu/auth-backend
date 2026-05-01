@@ -5,6 +5,7 @@ coverage/
 .env
 npm-debug.log*
 .jest-cache
+.vitest
 .codex/
 .agents/
 *.md

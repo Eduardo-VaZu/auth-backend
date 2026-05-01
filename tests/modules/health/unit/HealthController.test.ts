@@ -1,18 +1,18 @@
-import { jest } from '@jest/globals'
 import type { Request, Response } from 'express'
+import { describe, expect, it, vi } from 'vitest'
 
-const checkPostgresHealthMock = jest.fn()
-const checkRedisHealthMock = jest.fn()
+const checkPostgresHealthMock = vi.fn()
+const checkRedisHealthMock = vi.fn()
 
-jest.unstable_mockModule('@/infrastructure/db/db', () => ({
+vi.mock('@/infrastructure/db/db.js', () => ({
   checkPostgresHealth: checkPostgresHealthMock,
 }))
 
-jest.unstable_mockModule('@/infrastructure/redis', () => ({
+vi.mock('@/infrastructure/redis.js', () => ({
   checkRedisHealth: checkRedisHealthMock,
 }))
 
-const { HealthController } = await import('@/modules/health/HealthController')
+const { HealthController } = await import('@/modules/health/HealthController.js')
 
 type JsonResponse = {
   status: string
@@ -34,8 +34,8 @@ type JsonResponse = {
 
 const createResponseMock = (): Response => {
   const response = {
-    status: jest.fn().mockReturnThis(),
-    json: jest.fn().mockReturnThis(),
+    status: vi.fn().mockReturnThis(),
+    json: vi.fn().mockReturnThis(),
   }
 
   return response as unknown as Response
@@ -60,8 +60,9 @@ describe('HealthController', () => {
     expect(response.status).toHaveBeenCalledWith(200)
     expect(response.json).toHaveBeenCalledTimes(1)
 
-    const payload = (response.json as jest.Mock).mock
-      .calls[0][0] as JsonResponse
+    const firstJsonCall = vi.mocked(response.json).mock.calls[0]
+    expect(firstJsonCall).toBeDefined()
+    const payload = firstJsonCall![0] as JsonResponse
 
     expect(payload.status).toBe('ok')
     expect(payload.timestamp).toEqual(expect.any(String))
@@ -96,8 +97,9 @@ describe('HealthController', () => {
     expect(response.status).toHaveBeenCalledWith(503)
     expect(response.json).toHaveBeenCalledTimes(1)
 
-    const payload = (response.json as jest.Mock).mock
-      .calls[0][0] as JsonResponse
+    const firstJsonCall = vi.mocked(response.json).mock.calls[0]
+    expect(firstJsonCall).toBeDefined()
+    const payload = firstJsonCall![0] as JsonResponse
 
     expect(payload.status).toBe('degraded')
     expect(payload.dependencies).toEqual({
