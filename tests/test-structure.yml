@@ -1,0 +1,143 @@
+version: 1
+scope: auth-backend
+runner: vitest
+
+patterns:
+  unit: tests/**/unit/**/*.test.ts
+  integration: tests/**/integration/**/*.test.ts
+
+commands:
+  typecheck: npm run type:check
+  unit: npm run test:unit
+  integration: npm run test:integration
+  coverage: npm run test:coverage
+  cicd: npm run pr:check
+
+owners:
+  - id: integrante-1
+    area: health + identity
+    validation: npm run test:unit
+    unit_targets:
+      - source: src/modules/health/HealthController.ts
+        test: tests/modules/health/unit/HealthController.test.ts
+      - source: src/modules/identity/domain/value-objects/Email.ts
+        test: tests/modules/identity/domain/unit/IdentityDomain.test.ts
+      - source: src/modules/identity/domain/entities/User.ts
+        test: tests/modules/identity/domain/unit/IdentityDomain.test.ts
+      - source: src/modules/identity/application/use-cases/RegisterUseCase.ts
+        test: tests/modules/identity/application/unit/RegisterUseCase.test.ts
+    integration_targets:
+      - flow: register flow
+        test: tests/modules/identity/integration/RegisterFlow.test.ts
+        endpoints:
+          - GET /health
+          - POST /auth/register
+          - GET /auth/me
+
+  - id: integrante-2
+    area: access login + token
+    validation: npm run test:unit
+    unit_targets:
+      - source: src/modules/access/application/use-cases/LoginUseCase.ts
+        test: tests/modules/access/application/unit/LoginUseCase.test.ts
+      - source: src/modules/access/application/use-cases/RefreshTokenUseCase.ts
+        test: tests/modules/access/application/unit/RefreshTokenUseCase.test.ts
+      - source: src/modules/access/application/utils/duration.ts
+        test: tests/modules/access/application/unit/Duration.test.ts
+      - source: src/modules/access/infrastructure/services/TokenService.ts
+        test: tests/modules/access/infrastructure/unit/TokenService.test.ts
+    integration_targets:
+      - flow: login flow
+        test: tests/modules/access/integration/LoginFlow.test.ts
+        endpoints:
+          - POST /auth/login
+          - POST /auth/refresh
+
+  - id: integrante-3
+    area: access sessions + logout
+    validation: npm run test:integration
+    unit_targets:
+      - source: src/modules/access/domain/entities/RefreshToken.ts
+        test: tests/modules/access/domain/unit/AccessDomain.test.ts
+      - source: src/modules/access/domain/entities/UserSession.ts
+        test: tests/modules/access/domain/unit/AccessDomain.test.ts
+      - source: src/modules/access/application/use-cases/ListSessionsUseCase.ts
+        test: tests/modules/access/application/unit/SessionUseCases.test.ts
+      - source: src/modules/access/application/use-cases/LogoutUseCase.ts
+        test: tests/modules/access/application/unit/SessionUseCases.test.ts
+      - source: src/modules/access/application/use-cases/LogoutAllUseCase.ts
+        test: tests/modules/access/application/unit/SessionUseCases.test.ts
+      - source: src/modules/access/application/use-cases/RevokeSessionUseCase.ts
+        test: tests/modules/access/application/unit/SessionUseCases.test.ts
+    integration_targets:
+      - flow: session lifecycle
+        test: tests/modules/access/integration/SessionLifecycle.test.ts
+        endpoints:
+          - GET /auth/sessions
+          - DELETE /auth/sessions/:sessionId
+          - POST /auth/logout
+          - POST /auth/logout-all
+
+  - id: integrante-4
+    area: credentials
+    validation: npm run test:unit
+    unit_targets:
+      - source: src/modules/credentials/domain/value-objects/Password.ts
+        test: tests/modules/credentials/domain/unit/CredentialsDomain.test.ts
+      - source: src/modules/credentials/domain/entities/OneTimeToken.ts
+        test: tests/modules/credentials/domain/unit/CredentialsDomain.test.ts
+      - source: src/modules/credentials/domain/entities/UserCredential.ts
+        test: tests/modules/credentials/domain/unit/CredentialsDomain.test.ts
+      - source: src/modules/credentials/application/utils/parseOneTimeToken.ts
+        test: tests/modules/credentials/application/unit/ParseOneTimeToken.test.ts
+      - source: src/modules/credentials/application/use-cases/ChangePasswordUseCase.ts
+        test: tests/modules/credentials/application/unit/CredentialsUseCases.test.ts
+      - source: src/modules/credentials/application/use-cases/ForgotPasswordUseCase.ts
+        test: tests/modules/credentials/application/unit/CredentialsUseCases.test.ts
+      - source: src/modules/credentials/application/use-cases/ResetPasswordUseCase.ts
+        test: tests/modules/credentials/application/unit/CredentialsUseCases.test.ts
+      - source: src/modules/credentials/application/use-cases/VerifyEmailUseCase.ts
+        test: tests/modules/credentials/application/unit/CredentialsUseCases.test.ts
+    integration_targets:
+      - flow: credentials flow
+        test: tests/modules/credentials/integration/CredentialsFlow.test.ts
+        endpoints:
+          - POST /auth/forgot-password
+          - POST /auth/reset-password
+          - POST /auth/verify-email
+          - POST /auth/change-password
+
+  - id: integrante-5
+    area: admin + audit + cicd
+    validation: npm run pr:check
+    unit_targets:
+      - source: src/modules/admin/application/use-cases/AssignUserRoleUseCase.ts
+        test: tests/modules/admin/application/unit/AdminUseCases.test.ts
+      - source: src/modules/admin/application/use-cases/RevokeUserRoleUseCase.ts
+        test: tests/modules/admin/application/unit/AdminUseCases.test.ts
+      - source: src/modules/admin/application/use-cases/ListUsersUseCase.ts
+        test: tests/modules/admin/application/unit/AdminUseCases.test.ts
+      - source: src/modules/admin/application/use-cases/ListRolesUseCase.ts
+        test: tests/modules/admin/application/unit/AdminUseCases.test.ts
+      - source: src/modules/audit/application/use-cases/ListAuditLogsUseCase.ts
+        test: tests/modules/audit/application/unit/ListAuditLogsUseCase.test.ts
+    integration_targets:
+      - flow: admin flow
+        test: tests/modules/admin/integration/AdminFlow.test.ts
+      - flow: audit flow
+        test: tests/modules/audit/integration/AuditFlow.test.ts
+    cicd_targets:
+      - source: .github/workflows/node.js.yml
+        validates:
+          - npm run type:check
+          - npm run lint
+          - npm run test:unit
+          - npm run test:integration
+          - npm run build
+
+rules:
+  - Unit tests must not require PostgreSQL or Redis.
+  - Integration tests must use supertest and testcontainers.
+  - Do not add SonarQube.
+  - Do not add Postman.
+  - Keep tests inside the assigned module folders.

@@ -71,13 +71,13 @@ tests/
 
 ## Distribucion Por Integrante
 
-| Integrante | Area | Unitarias | Integracion | Validacion |
-| --- | --- | --- | --- | --- |
-| 1 | `health` + `identity` | `HealthController`, `Email`, `User`, `RegisterUseCase` | `RegisterFlow`: `/health`, `/auth/register`, `/auth/me` | `npm run test:unit` |
-| 2 | `access` login/token | `LoginUseCase`, `RefreshTokenUseCase`, `TokenService`, `duration` | `LoginFlow`: `/auth/login`, `/auth/refresh` | `npm run test:unit` |
-| 3 | `access` sesiones/logout | `ListSessionsUseCase`, `LogoutUseCase`, `LogoutAllUseCase`, `RevokeSessionUseCase`, `RefreshToken`, `UserSession` | `SessionLifecycle`: `/auth/sessions`, `/auth/logout`, revoke session | `npm run test:integration` |
-| 4 | `credentials` | `Password`, `parseOneTimeToken`, `ChangePasswordUseCase`, `ForgotPasswordUseCase`, `ResetPasswordUseCase`, `VerifyEmailUseCase` | `CredentialsFlow`: forgot/reset/verify email | `npm run test:unit` |
-| 5 | `admin` + `audit` + CI/CD | `AdminUseCases`, `ListAuditLogsUseCase`, mappers | `AdminFlow`, `AuditFlow` | `npm run pr:check` |
+| Integrante | Area                      | Unitarias                                                                                                                       | Integracion                                                          | Validacion                 |
+| ---------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------------------------- |
+| 1          | `health` + `identity`     | `HealthController`, `Email`, `User`, `RegisterUseCase`                                                                          | `RegisterFlow`: `/health`, `/auth/register`, `/auth/me`              | `npm run test:unit`        |
+| 2          | `access` login/token      | `LoginUseCase`, `RefreshTokenUseCase`, `TokenService`, `duration`                                                               | `LoginFlow`: `/auth/login`, `/auth/refresh`                          | `npm run test:unit`        |
+| 3          | `access` sesiones/logout  | `ListSessionsUseCase`, `LogoutUseCase`, `LogoutAllUseCase`, `RevokeSessionUseCase`, `RefreshToken`, `UserSession`               | `SessionLifecycle`: `/auth/sessions`, `/auth/logout`, revoke session | `npm run test:integration` |
+| 4          | `credentials`             | `Password`, `parseOneTimeToken`, `ChangePasswordUseCase`, `ForgotPasswordUseCase`, `ResetPasswordUseCase`, `VerifyEmailUseCase` | `CredentialsFlow`: forgot/reset/verify email                         | `npm run test:unit`        |
+| 5          | `admin` + `audit` + CI/CD | `AdminUseCases`, `ListAuditLogsUseCase`, mappers                                                                                | `AdminFlow`, `AuditFlow`                                             | `npm run pr:check`         |
 
 ## Integrante 1: Health E Identity
 
