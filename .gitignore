@@ -9,3 +9,7 @@ npm-debug.log*
 .codex/
 .agents/
 *.md
+!TEST_ASSIGNMENTS.md
+!PR_WORKFLOW.md
+!.github/
+!.github/*.md
