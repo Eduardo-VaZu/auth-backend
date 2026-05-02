@@ -8,7 +8,6 @@ npm-debug.log*
 .vitest
 .codex/
 .agents/
-*.md
 !TEST_ASSIGNMENTS.md
 !PR_WORKFLOW.md
 !.github/
