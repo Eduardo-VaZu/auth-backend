@@ -9,6 +9,7 @@ import {
   changeEmailSchema,
   changePasswordSchema,
   forgotPasswordSchema,
+  resendVerificationSchema,
   resetPasswordSchema,
   verifyEmailSchema,
 } from '../../../access/infrastructure/routes/auth.schemas.js'
@@ -59,7 +60,7 @@ export const createCredentialsRouter = (container: Container): Router => {
 
   router.post(
     '/resend-verification',
-    authenticate,
+    validateBody(resendVerificationSchema),
     (request, response, next) => {
       Promise.resolve(controller.resendVerification(request, response)).catch(
         next,

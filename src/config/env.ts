@@ -28,6 +28,38 @@ const envSchema = z.object({
   COOKIE_SAME_SITE: z.enum(['strict', 'lax', 'none']),
   MAX_SESSIONS_PER_USER: z.coerce.number().int().positive(),
   SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().positive(),
+  EMAIL_DELIVERY_MODE: z.enum(['preview', 'brevo']).default('preview'),
+  BREVO_API_KEY: z.string().min(1).optional(),
+  BREVO_SENDER_EMAIL: z.string().email().optional(),
+  BREVO_SENDER_NAME: z.string().min(1).default('Auth Backend'),
+  EXPIRED_SESSION_RETENTION_SECONDS: z.coerce.number().int().nonnegative().default(0),
+}).superRefine((value, context) => {
+  if (value.NODE_ENV === 'production' && value.EMAIL_DELIVERY_MODE !== 'brevo') {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['EMAIL_DELIVERY_MODE'],
+      message: 'Production requires EMAIL_DELIVERY_MODE=brevo',
+    })
+  }
+
+  if (value.EMAIL_DELIVERY_MODE === 'brevo') {
+    if (value.BREVO_API_KEY === undefined) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['BREVO_API_KEY'],
+        message: 'BREVO_API_KEY is required when EMAIL_DELIVERY_MODE=brevo',
+      })
+    }
+
+    if (value.BREVO_SENDER_EMAIL === undefined) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['BREVO_SENDER_EMAIL'],
+        message:
+          'BREVO_SENDER_EMAIL is required when EMAIL_DELIVERY_MODE=brevo',
+      })
+    }
+  }
 })
 
 const formatIssues = (issues: z.ZodIssue[]): string => {

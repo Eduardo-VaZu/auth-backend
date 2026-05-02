@@ -2,8 +2,15 @@ import type { Request, Response } from 'express'
 import { inject, injectable } from 'inversify'
 
 import { TYPES } from '../../../../container/types.js'
-import { ACCESS_TOKEN_COOKIE_NAME } from '../../../access/application/constants/auth.constants.js'
+import {
+  ACCESS_TOKEN_COOKIE_NAME,
+  REFRESH_TOKEN_COOKIE_NAME,
+} from '../../../access/application/constants/auth.constants.js'
 import type { ChangePasswordInputDto } from '../../../access/application/dtos/AuthDtos.js'
+import {
+  getClearedAccessTokenCookieOptions,
+  getClearedRefreshTokenCookieOptions,
+} from '../../../access/infrastructure/controllers/cookieOptions.js'
 import type {
   ChangeEmailInputDto,
   ForgotPasswordInputDto,
@@ -32,6 +39,17 @@ const getUserAgent = (request: Request): string | null => {
   return typeof userAgent === 'string' ? userAgent : null
 }
 
+const clearAuthCookies = (response: Response): void => {
+  response.clearCookie(
+    ACCESS_TOKEN_COOKIE_NAME,
+    getClearedAccessTokenCookieOptions(),
+  )
+  response.clearCookie(
+    REFRESH_TOKEN_COOKIE_NAME,
+    getClearedRefreshTokenCookieOptions(),
+  )
+}
+
 @injectable()
 export class CredentialsController {
   public constructor(
@@ -55,7 +73,7 @@ export class CredentialsController {
   ): Promise<void> {
     const body = request.body as Pick<ForgotPasswordInputDto, 'email'>
 
-    await this.forgotPasswordUseCase.execute({
+    const result = await this.forgotPasswordUseCase.execute({
       email: body.email,
       requestId: request.requestId ?? null,
       userAgent: getUserAgent(request),
@@ -65,6 +83,9 @@ export class CredentialsController {
     response.status(200).json({
       message:
         'If the account exists, password reset instructions were generated',
+      ...(result.previewToken === null
+        ? {}
+        : { previewToken: result.previewToken }),
     })
   }
 
@@ -112,17 +133,21 @@ export class CredentialsController {
     request: Request,
     response: Response,
   ): Promise<void> {
+    const body = request.body as Pick<ResendVerificationInputDto, 'email'>
     const input: ResendVerificationInputDto = {
-      userId: request.user!.userId,
+      email: body.email,
       requestId: request.requestId ?? null,
       userAgent: getUserAgent(request),
       ipAddress: request.ip ?? null,
     }
 
-    await this.resendVerificationUseCase.execute(input)
+    const result = await this.resendVerificationUseCase.execute(input)
 
     response.status(200).json({
       message: 'Verification instructions generated',
+      ...(result.previewToken === null
+        ? {}
+        : { previewToken: result.previewToken }),
     })
   }
 
@@ -146,6 +171,8 @@ export class CredentialsController {
       ipAddress: request.ip ?? null,
     })
 
+    clearAuthCookies(response)
+
     response.status(200).json({
       message: 'Password changed successfully',
     })
@@ -157,7 +184,7 @@ export class CredentialsController {
   ): Promise<void> {
     const body = request.body as Pick<ChangeEmailInputDto, 'email'>
 
-    await this.changeEmailUseCase.execute({
+    const result = await this.changeEmailUseCase.execute({
       userId: request.user!.userId,
       email: body.email,
       accessToken: getSignedAccessToken(request),
@@ -167,8 +194,13 @@ export class CredentialsController {
       ipAddress: request.ip ?? null,
     })
 
+    clearAuthCookies(response)
+
     response.status(200).json({
       message: 'Email updated. Re-verify your new email to reactivate access',
+      ...(result.previewToken === null
+        ? {}
+        : { previewToken: result.previewToken }),
     })
   }
 }

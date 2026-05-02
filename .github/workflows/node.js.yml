@@ -37,7 +37,7 @@ jobs:
           node-version: 22.x
           cache: npm
       - run: npm ci
-      - run: npm run test:unit
+      - run: npm run test:unit:ci
       - name: Unit coverage report (non-blocking while thresholds are ramping)
         if: always()
         continue-on-error: true
@@ -60,7 +60,7 @@ jobs:
           node-version: 22.x
           cache: npm
       - run: npm ci
-      - run: npm run test:integration
+      - run: npm run test:integration:ci
 
   build:
     name: Production Build

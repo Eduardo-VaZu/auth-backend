@@ -51,4 +51,5 @@ export interface IUserSessionRepository {
     revokedAt?: Date,
     revokedReason?: string | null,
   ): Promise<void>
+  deleteExpired(referenceDate?: Date): Promise<number>
 }

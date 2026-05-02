@@ -1,4 +1,4 @@
-import { and, asc, count, eq, gt, isNull } from 'drizzle-orm'
+import { and, asc, count, eq, gt, isNull, lt } from 'drizzle-orm'
 import { inject, injectable } from 'inversify'
 import type { Logger } from 'pino'
 
@@ -290,6 +290,17 @@ export class UserSessionRepository implements IUserSessionRepository {
           isNull(schema.userSessions.revokedAt),
         ),
       )
+  }
+
+  public async deleteExpired(referenceDate = new Date()): Promise<number> {
+    const deletedSessions = await this.database
+      .delete(schema.userSessions)
+      .where(lt(schema.userSessions.expiresAt, referenceDate))
+      .returning({
+        id: schema.userSessions.id,
+      })
+
+    return deletedSessions.length
   }
 
   private mapToEntity(

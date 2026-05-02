@@ -48,7 +48,7 @@ export const createAuthRouter = (container: Container): Router => {
     },
   )
 
-  router.post('/logout', authenticate, (request, response, next) => {
+  router.post('/logout', (request, response, next) => {
     Promise.resolve(controller.logout(request, response)).catch(next)
   })
 

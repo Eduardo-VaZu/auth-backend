@@ -9,9 +9,11 @@ import { ChangePasswordUseCase } from './application/use-cases/ChangePasswordUse
 import { ChangeEmailUseCase } from './application/use-cases/ChangeEmailUseCase.js'
 import type { IOneTimeTokenRepository } from './domain/repositories/IOneTimeTokenRepository.js'
 import type { IUserCredentialRepository } from './domain/repositories/IUserCredentialRepository.js'
+import type { IAuthEmailService } from './domain/services/IAuthEmailService.js'
 import { OneTimeTokenRepository } from './infrastructure/repositories/OneTimeTokenRepository.js'
 import { UserCredentialRepository } from './infrastructure/repositories/UserCredentialRepository.js'
 import { CredentialsController } from './infrastructure/controllers/CredentialsController.js'
+import { AuthEmailService } from './infrastructure/services/AuthEmailService.js'
 
 export const configureCredentialsModule = (container: Container): void => {
   container
@@ -20,6 +22,7 @@ export const configureCredentialsModule = (container: Container): void => {
   container
     .bind<IOneTimeTokenRepository>(TYPES.IOneTimeTokenRepository)
     .to(OneTimeTokenRepository)
+  container.bind<IAuthEmailService>(TYPES.IAuthEmailService).to(AuthEmailService)
   container
     .bind<ChangePasswordUseCase>(TYPES.ChangePasswordUseCase)
     .to(ChangePasswordUseCase)

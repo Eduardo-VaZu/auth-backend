@@ -4,9 +4,13 @@ import { inject, injectable } from 'inversify'
 
 import { TYPES } from '../../../../container/types.js'
 import type { IAuthUnitOfWork } from '../../../../shared/domain/services/IAuthUnitOfWork.js'
-import { Email } from '../../../identity/domain/value-objects/Email.js'
 import type { IUserRepository } from '../../../identity/domain/repositories/IUserRepository.js'
-import type { ForgotPasswordInputDto } from '../dtos/CredentialDtos.js'
+import { Email } from '../../../identity/domain/value-objects/Email.js'
+import type { IAuthEmailService } from '../../domain/services/IAuthEmailService.js'
+import type {
+  ForgotPasswordInputDto,
+  OneTimeTokenDispatchResultDto,
+} from '../dtos/CredentialDtos.js'
 
 const PASSWORD_RESET_TOKEN_TTL_MS = 60 * 60 * 1000
 
@@ -17,23 +21,34 @@ export class ForgotPasswordUseCase {
     private readonly userRepository: IUserRepository,
     @inject(TYPES.IAuthUnitOfWork)
     private readonly authUnitOfWork: IAuthUnitOfWork,
+    @inject(TYPES.IAuthEmailService)
+    private readonly authEmailService: IAuthEmailService,
   ) {}
 
-  public async execute(input: ForgotPasswordInputDto): Promise<void> {
+  public async execute(
+    input: ForgotPasswordInputDto,
+  ): Promise<OneTimeTokenDispatchResultDto> {
     const email = new Email(input.email)
     const user = await this.userRepository.findByEmail(email.value)
 
     if (user === null) {
-      return
+      return {
+        previewToken: null,
+      }
     }
 
     const plainToken = randomBytes(32).toString('hex')
     const tokenHash = await argon2.hash(plainToken)
     const expiresAt = new Date(Date.now() + PASSWORD_RESET_TOKEN_TTL_MS)
 
-    await this.authUnitOfWork.run(
+    const storedToken = await this.authUnitOfWork.run(
       async ({ authAuditService, oneTimeTokenRepository }) => {
-        await oneTimeTokenRepository.create({
+        await oneTimeTokenRepository.invalidateActiveByUserId(
+          user.id,
+          'password_reset',
+        )
+
+        const createdToken = await oneTimeTokenRepository.create({
           userId: user.id,
           type: 'password_reset',
           tokenHash,
@@ -53,7 +68,16 @@ export class ForgotPasswordUseCase {
             expiresAt: expiresAt.toISOString(),
           },
         })
+
+        return createdToken
       },
     )
+
+    return this.authEmailService.sendPasswordResetEmail({
+      email: email.value,
+      token: `${storedToken.id}.${plainToken}`,
+      expiresAt,
+      requestId: input.requestId,
+    })
   }
 }

@@ -1,44 +1,47 @@
 import cron, { type ScheduledTask } from 'node-cron'
-import { and, isNotNull, lt } from 'drizzle-orm'
 import type { Logger } from 'pino'
 
-import { db } from '../infrastructure/db/db.js'
-import { refreshTokens } from '../infrastructure/db/schema/index.js'
+import { env } from '../config/env.js'
+import { pool } from '../infrastructure/db/db.js'
+import { RefreshTokenRepository } from '../modules/access/infrastructure/repositories/RefreshTokenRepository.js'
+import { UserSessionRepository } from '../modules/access/infrastructure/repositories/UserSessionRepository.js'
 
 export const startCleanupCron = (logger: Logger): ScheduledTask => {
+  const refreshTokenRepository = new RefreshTokenRepository(pool, logger)
+  const userSessionRepository = new UserSessionRepository(pool, logger)
+
   const task = cron.schedule('0 0 * * *', () => {
     void (async () => {
       try {
-        const deletedTokens = await db
-          .delete(refreshTokens)
-          .where(
-            and(
-              lt(refreshTokens.expiresAt, new Date()),
-              isNotNull(refreshTokens.revokedAt),
-            ),
-          )
-          .returning({
-            id: refreshTokens.id,
-          })
+        const now = new Date()
+        const sessionReferenceDate = new Date(
+          now.getTime() - env.EXPIRED_SESSION_RETENTION_SECONDS * 1000,
+        )
+        const deletedTokens = await refreshTokenRepository.deleteExpired(now)
+        const deletedSessions = await userSessionRepository.deleteExpired(
+          sessionReferenceDate,
+        )
 
         logger.info(
           {
-            deletedCount: deletedTokens.length,
+            deletedRefreshTokenCount: deletedTokens,
+            deletedUserSessionCount: deletedSessions,
+            sessionRetentionSeconds: env.EXPIRED_SESSION_RETENTION_SECONDS,
           },
-          'Expired refresh token cleanup completed',
+          'Expired auth artifacts cleanup completed',
         )
       } catch (error: unknown) {
         logger.error(
           {
             err: error,
           },
-          'Expired refresh token cleanup failed',
+          'Expired auth artifacts cleanup failed',
         )
       }
     })()
   })
 
-  logger.info('Refresh token cleanup cron scheduled')
+  logger.info('Auth artifact cleanup cron scheduled')
 
   return task
 }

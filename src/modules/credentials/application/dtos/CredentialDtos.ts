@@ -1,3 +1,7 @@
+export interface OneTimeTokenDispatchResultDto {
+  previewToken: string | null
+}
+
 export interface ForgotPasswordInputDto {
   email: string
   requestId: string | null
@@ -21,7 +25,7 @@ export interface VerifyEmailInputDto {
 }
 
 export interface ResendVerificationInputDto {
-  userId: string
+  email: string
   requestId: string | null
   userAgent: string | null
   ipAddress: string | null

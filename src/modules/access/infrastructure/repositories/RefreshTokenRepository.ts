@@ -1,14 +1,4 @@
-import {
-  and,
-  asc,
-  count,
-  desc,
-  eq,
-  gt,
-  isNotNull,
-  isNull,
-  lt,
-} from 'drizzle-orm'
+import { and, asc, count, desc, eq, gt, isNull, lt } from 'drizzle-orm'
 import { inject, injectable } from 'inversify'
 import type { Logger } from 'pino'
 
@@ -235,12 +225,7 @@ export class RefreshTokenRepository implements IRefreshTokenRepository {
   public async deleteExpired(referenceDate = new Date()): Promise<number> {
     const deletedTokens = await this.database
       .delete(schema.refreshTokens)
-      .where(
-        and(
-          lt(schema.refreshTokens.expiresAt, referenceDate),
-          isNotNull(schema.refreshTokens.revokedAt),
-        ),
-      )
+      .where(lt(schema.refreshTokens.expiresAt, referenceDate))
       .returning({
         id: schema.refreshTokens.id,
       })

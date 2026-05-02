@@ -30,6 +30,10 @@ export const forgotPasswordSchema = z.object({
   email: z.string().trim().email(),
 })
 
+export const resendVerificationSchema = z.object({
+  email: z.string().trim().email(),
+})
+
 export const resetPasswordSchema = z.object({
   token: oneTimeTokenSchema,
   newPassword: z.string().min(8),
