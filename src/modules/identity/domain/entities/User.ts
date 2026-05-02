@@ -57,6 +57,6 @@ export class User {
   }
 
   public primaryRole(): UserRole {
-    return this.roles[0] ?? 'user'
+    return this.roles.includes('admin') ? 'admin' : this.roles[0] ?? 'user'
   }
 }
