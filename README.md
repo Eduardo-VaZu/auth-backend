@@ -130,25 +130,25 @@ Servidor local por defecto: `http://localhost:4000`
 
 Variables principales definidas en `.env.example`:
 
-| Variable | Descripción |
-|---|---|
-| `PORT` | Puerto HTTP del servicio |
-| `NODE_ENV` | Entorno de ejecución |
-| `CORS_ORIGIN` | Origen permitido para CORS |
-| `DATABASE_URL` | Cadena de conexión a PostgreSQL |
-| `REDIS_URL` | Cadena de conexión a Redis |
-| `ACCESS_TOKEN_SECRET` | Secreto para access tokens |
-| `REFRESH_TOKEN_SECRET` | Secreto para refresh tokens |
-| `COOKIE_SECRET` | Secreto para firmado de cookies |
-| `COOKIE_DOMAIN` | Dominio de cookies |
-| `COOKIE_SECURE` | Cookies solo por HTTPS |
-| `COOKIE_SAME_SITE` | Política `SameSite` |
-| `MAX_SESSIONS_PER_USER` | Límite de sesiones por usuario |
+| Variable                            | Descripción                                    |
+| ----------------------------------- | ---------------------------------------------- |
+| `PORT`                              | Puerto HTTP del servicio                       |
+| `NODE_ENV`                          | Entorno de ejecución                           |
+| `CORS_ORIGIN`                       | Origen permitido para CORS                     |
+| `DATABASE_URL`                      | Cadena de conexión a PostgreSQL                |
+| `REDIS_URL`                         | Cadena de conexión a Redis                     |
+| `ACCESS_TOKEN_SECRET`               | Secreto para access tokens                     |
+| `REFRESH_TOKEN_SECRET`              | Secreto para refresh tokens                    |
+| `COOKIE_SECRET`                     | Secreto para firmado de cookies                |
+| `COOKIE_DOMAIN`                     | Dominio de cookies                             |
+| `COOKIE_SECURE`                     | Cookies solo por HTTPS                         |
+| `COOKIE_SAME_SITE`                  | Política `SameSite`                            |
+| `MAX_SESSIONS_PER_USER`             | Límite de sesiones por usuario                 |
 | `EXPIRED_SESSION_RETENTION_SECONDS` | Retención de sesiones expiradas antes de purga |
-| `EMAIL_DELIVERY_MODE` | `preview` o `brevo` |
-| `BREVO_API_KEY` | API key de Brevo |
-| `BREVO_SENDER_EMAIL` | Correo remitente |
-| `BREVO_SENDER_NAME` | Nombre remitente |
+| `EMAIL_DELIVERY_MODE`               | `preview` o `brevo`                            |
+| `BREVO_API_KEY`                     | API key de Brevo                               |
+| `BREVO_SENDER_EMAIL`                | Correo remitente                               |
+| `BREVO_SENDER_NAME`                 | Nombre remitente                               |
 
 Notas operativas:
 
@@ -157,34 +157,34 @@ Notas operativas:
 
 ## Scripts Disponibles
 
-| Script | Descripción |
-|---|---|
-| `npm run dev` | Inicia el servidor en desarrollo |
-| `npm run dev:local` | Levanta servicios locales y arranca desarrollo |
-| `npm run build` | Compila TypeScript a `dist/` |
-| `npm run start` | Ejecuta la build de producción |
-| `npm run type:check` | Verifica tipos con TypeScript |
-| `npm run lint` | Ejecuta ESLint |
-| `npm run lint:fix` | Corrige problemas autofixables de lint |
-| `npm run format` | Formatea el repositorio con Prettier |
-| `npm run format:check` | Verifica formato |
-| `npm run db:generate` | Genera artefactos de Drizzle |
-| `npm run db:migrate` | Ejecuta migraciones |
-| `npm run db:migrate:legacy-credentials` | Ejecuta migración de datos heredados |
-| `npm run db:seed:roles` | Inserta roles base |
-| `npm run db:studio` | Abre Drizzle Studio |
-| `npm run test` | Ejecuta todos los tests |
-| `npm run test:unit` | Ejecuta pruebas unitarias |
-| `npm run test:integration` | Ejecuta pruebas de integración |
-| `npm run test:unit:ci` | Pruebas unitarias en modo CI |
-| `npm run test:integration:ci` | Pruebas de integración en modo CI |
-| `npm run test:ci` | Suite de pruebas usada por CI |
-| `npm run test:coverage` | Cobertura de pruebas unitarias |
-| `npm run pr:check` | Validación local previa a PR |
-| `npm run docker:build` | Construye la imagen Docker |
-| `npm run docker:up:d` | Levanta PostgreSQL y Redis |
-| `npm run docker:up:full` | Levanta la aplicación completa con Docker |
-| `npm run docker:down` | Detiene y elimina recursos Docker |
+| Script                                  | Descripción                                    |
+| --------------------------------------- | ---------------------------------------------- |
+| `npm run dev`                           | Inicia el servidor en desarrollo               |
+| `npm run dev:local`                     | Levanta servicios locales y arranca desarrollo |
+| `npm run build`                         | Compila TypeScript a `dist/`                   |
+| `npm run start`                         | Ejecuta la build de producción                 |
+| `npm run type:check`                    | Verifica tipos con TypeScript                  |
+| `npm run lint`                          | Ejecuta ESLint                                 |
+| `npm run lint:fix`                      | Corrige problemas autofixables de lint         |
+| `npm run format`                        | Formatea el repositorio con Prettier           |
+| `npm run format:check`                  | Verifica formato                               |
+| `npm run db:generate`                   | Genera artefactos de Drizzle                   |
+| `npm run db:migrate`                    | Ejecuta migraciones                            |
+| `npm run db:migrate:legacy-credentials` | Ejecuta migración de datos heredados           |
+| `npm run db:seed:roles`                 | Inserta roles base                             |
+| `npm run db:studio`                     | Abre Drizzle Studio                            |
+| `npm run test`                          | Ejecuta todos los tests                        |
+| `npm run test:unit`                     | Ejecuta pruebas unitarias                      |
+| `npm run test:integration`              | Ejecuta pruebas de integración                 |
+| `npm run test:unit:ci`                  | Pruebas unitarias en modo CI                   |
+| `npm run test:integration:ci`           | Pruebas de integración en modo CI              |
+| `npm run test:ci`                       | Suite de pruebas usada por CI                  |
+| `npm run test:coverage`                 | Cobertura de pruebas unitarias                 |
+| `npm run pr:check`                      | Validación local previa a PR                   |
+| `npm run docker:build`                  | Construye la imagen Docker                     |
+| `npm run docker:up:d`                   | Levanta PostgreSQL y Redis                     |
+| `npm run docker:up:full`                | Levanta la aplicación completa con Docker      |
+| `npm run docker:down`                   | Detiene y elimina recursos Docker              |
 
 ## Docker
 
