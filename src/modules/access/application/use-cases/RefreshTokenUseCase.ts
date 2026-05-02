@@ -13,8 +13,25 @@ import type {
   RefreshTokenResultDto,
 } from '../dtos/AuthDtos.js'
 
-const getDeviceName = (userAgent: string | null): string | null =>
-  userAgent === null ? null : userAgent.slice(0, 255)
+const getDeviceName = (userAgent: string | null): string | null => {
+  if (!userAgent) return null
+  
+  let os = 'Unknown OS'
+  if (userAgent.includes('Win')) os = 'Windows'
+  else if (userAgent.includes('Mac')) os = 'macOS'
+  else if (userAgent.includes('Linux')) os = 'Linux'
+  else if (userAgent.includes('Android')) os = 'Android'
+  else if (userAgent.includes('like Mac OS X')) os = 'iOS'
+
+  let browser = 'Unknown Browser'
+  if (userAgent.includes('Edg/')) browser = 'Edge'
+  else if (userAgent.includes('Chrome/')) browser = 'Chrome'
+  else if (userAgent.includes('Firefox/')) browser = 'Firefox'
+  else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome/')) browser = 'Safari'
+  else if (userAgent.includes('Opera/') || userAgent.includes('OPR/')) browser = 'Opera'
+
+  return `${os} · ${browser}`
+}
 
 class RefreshTokenRotationConflictError extends Error {
   public constructor() {
