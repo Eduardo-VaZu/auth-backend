@@ -6,11 +6,15 @@ import * as redisModule from '../../../../src/infrastructure/redis.js'
 
 describe('HealthController', () => {
   it('returns 200 when PostgreSQL and Redis are ok', async () => {
-    const pgSpy = vi.spyOn(dbModule, 'checkPostgresHealth').mockResolvedValue({ status: 'ok', latencyMs: 10 })
-    const redisSpy = vi.spyOn(redisModule, 'checkRedisHealth').mockResolvedValue({ status: 'ok', latencyMs: 5 })
+    const pgSpy = vi
+      .spyOn(dbModule, 'checkPostgresHealth')
+      .mockResolvedValue({ status: 'ok', latencyMs: 10 })
+    const redisSpy = vi
+      .spyOn(redisModule, 'checkRedisHealth')
+      .mockResolvedValue({ status: 'ok', latencyMs: 5 })
 
     const controller = new HealthController()
-    
+
     // Tipamos el mock de la respuesta usando Partial<Response>
     const res = {
       status: vi.fn().mockReturnThis(),
@@ -26,8 +30,12 @@ describe('HealthController', () => {
   })
 
   it('returns 503 when a dependency fails', async () => {
-    const pgSpy = vi.spyOn(dbModule, 'checkPostgresHealth').mockResolvedValue({ status: 'error', latencyMs: 100 })
-    const redisSpy = vi.spyOn(redisModule, 'checkRedisHealth').mockResolvedValue({ status: 'ok', latencyMs: 5 })
+    const pgSpy = vi
+      .spyOn(dbModule, 'checkPostgresHealth')
+      .mockResolvedValue({ status: 'error', latencyMs: 100 })
+    const redisSpy = vi
+      .spyOn(redisModule, 'checkRedisHealth')
+      .mockResolvedValue({ status: 'ok', latencyMs: 5 })
 
     const controller = new HealthController()
     const res = {
@@ -38,7 +46,9 @@ describe('HealthController', () => {
     await controller.getStatus({} as Request, res)
 
     expect(res.status).toHaveBeenCalledWith(503)
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: 'degraded' }))
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'degraded' }),
+    )
 
     pgSpy.mockRestore()
     redisSpy.mockRestore()

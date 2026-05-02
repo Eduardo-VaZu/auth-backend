@@ -24,10 +24,10 @@ describe('Identity Domain', () => {
       authzVersion: 1,
       roles: [], // Agregamos el array de roles que faltaba
       emailVerifiedAt: null, // Propiedad faltante según error
-      lastLoginAt: null,    // Propiedad faltante según error
+      lastLoginAt: null, // Propiedad faltante según error
       createdAt: new Date(),
       updatedAt: new Date(),
-      deletedAt: null
+      deletedAt: null,
     }
 
     const user = new User(userProps)
@@ -45,7 +45,7 @@ describe('Identity Domain', () => {
       lastLoginAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),
-      deletedAt: new Date() // Simula borrado lógico
+      deletedAt: new Date(), // Simula borrado lógico
     }
 
     const user = new User(userProps)
