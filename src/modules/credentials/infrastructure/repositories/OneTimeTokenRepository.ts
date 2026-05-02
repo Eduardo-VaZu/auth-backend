@@ -110,6 +110,40 @@ export class OneTimeTokenRepository implements IOneTimeTokenRepository {
       : this.mapEmailVerificationTokenToEntity(row)
   }
 
+  public async invalidateActiveByUserId(
+    userId: string,
+    type: OneTimeTokenType,
+    usedAt = new Date(),
+  ): Promise<void> {
+    if (type === 'password_reset') {
+      await this.database
+        .update(passwordResetTokens)
+        .set({
+          usedAt,
+        })
+        .where(
+          and(
+            eq(passwordResetTokens.userId, userId),
+            isNull(passwordResetTokens.usedAt),
+          ),
+        )
+
+      return
+    }
+
+    await this.database
+      .update(emailVerificationTokens)
+      .set({
+        usedAt,
+      })
+      .where(
+        and(
+          eq(emailVerificationTokens.userId, userId),
+          isNull(emailVerificationTokens.usedAt),
+        ),
+      )
+  }
+
   public async markAsUsed(
     id: string,
     type: OneTimeTokenType,

@@ -13,3 +13,7 @@ npm-debug.log*
 !PR_WORKFLOW.md
 !.github/
 !.github/*.md
+!docs/testing/
+!docs/testing/*.md
+!docs/openapi/
+!docs/openapi/*.md

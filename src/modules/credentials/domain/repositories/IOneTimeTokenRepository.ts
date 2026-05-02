@@ -18,5 +18,10 @@ export interface IOneTimeTokenRepository {
     type: OneTimeTokenType,
     referenceDate?: Date,
   ): Promise<OneTimeToken | null>
+  invalidateActiveByUserId(
+    userId: string,
+    type: OneTimeTokenType,
+    usedAt?: Date,
+  ): Promise<void>
   markAsUsed(id: string, type: OneTimeTokenType, usedAt?: Date): Promise<void>
 }

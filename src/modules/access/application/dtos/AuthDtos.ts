@@ -10,10 +10,14 @@ export interface AuthUserDto {
 export interface RegisterInputDto {
   email: string
   password: string
+  requestId: string | null
 }
 
 export interface RegisterResultDto {
   user: AuthUserDto
+  verificationRequired: true
+  message: string
+  previewToken?: string
 }
 
 export interface LoginInputDto {

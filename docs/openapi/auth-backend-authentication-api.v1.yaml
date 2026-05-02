@@ -3,12 +3,29 @@ info:
   title: Auth Backend API
   version: 1.0.0
   description: API de autenticacion local con sesiones, refresh rotation y auditoria.
+  license:
+    name: UNLICENSED
+    url: https://choosealicense.com/no-permission/
+x-changelog:
+  - date: 2026-05-01
+    summary: Alineacion de contrato con backend actual
+    changes:
+      - Registro actualizado a verificacion obligatoria de email sin login automatico.
+      - Logout documentado como idempotente y sin seguridad obligatoria en ruta.
+      - Resend verification actualizado para recibir email sin autenticacion.
+      - Respuestas preview documentadas para development/test.
+      - Codigos 422 agregados en endpoints con validacion de body.
 servers:
-  - url: http://localhost:4000
+  - url: /
 tags:
   - name: Health
+    description: Endpoints de salud y disponibilidad de dependencias.
   - name: Auth
+    description: Endpoints de autenticacion, sesiones y credenciales.
   - name: Admin
+    description: Endpoints administrativos y de auditoria.
+security:
+  - accessTokenCookie: []
 components:
   securitySchemes:
     accessTokenCookie:
@@ -39,6 +56,11 @@ components:
             - requestId
       required:
         - error
+      example:
+        error:
+          code: VALIDATION_ERROR
+          message: Validation failed
+          requestId: 8f7c8ff0-5b2c-47a7-bbd1-b2b7235a6b39
     AuthUser:
       type: object
       properties:
@@ -59,6 +81,12 @@ components:
         - email
         - role
         - roles
+      example:
+        id: 9d0e8a69-5d42-46cf-9011-3642c3bfe6ef
+        email: user@example.com
+        role: user
+        roles:
+          - user
     RegisterRequest:
       type: object
       properties:
@@ -71,6 +99,9 @@ components:
       required:
         - email
         - password
+      example:
+        email: user@example.com
+        password: supersecure123
     LoginRequest:
       type: object
       properties:
@@ -83,6 +114,9 @@ components:
       required:
         - email
         - password
+      example:
+        email: user@example.com
+        password: supersecure123
     ChangePasswordRequest:
       type: object
       properties:
@@ -95,6 +129,9 @@ components:
       required:
         - currentPassword
         - newPassword
+      example:
+        currentPassword: current-pass-123
+        newPassword: new-pass-456
     ForgotPasswordRequest:
       type: object
       properties:
@@ -103,6 +140,8 @@ components:
           format: email
       required:
         - email
+      example:
+        email: user@example.com
     ResetPasswordRequest:
       type: object
       properties:
@@ -115,6 +154,9 @@ components:
       required:
         - token
         - newPassword
+      example:
+        token: 6c8bd2f8-7f9a-4ef7-9cd9-7d8d12c03baf.4b2e4c76d081ef6f0cd4427547ea2c48c0fd32c9e15bb74c6471fc566fd0b8ce
+        newPassword: new-pass-456
     VerifyEmailRequest:
       type: object
       properties:
@@ -123,6 +165,18 @@ components:
           description: Formato tokenId.secret
       required:
         - token
+      example:
+        token: 6c8bd2f8-7f9a-4ef7-9cd9-7d8d12c03baf.4b2e4c76d081ef6f0cd4427547ea2c48c0fd32c9e15bb74c6471fc566fd0b8ce
+    ResendVerificationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+        - email
+      example:
+        email: user@example.com
     MessageResponse:
       type: object
       properties:
@@ -130,6 +184,21 @@ components:
           type: string
       required:
         - message
+      example:
+        message: Operation completed successfully
+    PreviewMessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        previewToken:
+          type: string
+          description: Solo disponible en development/test con EMAIL_DELIVERY_MODE=preview.
+      required:
+        - message
+      example:
+        message: Verification instructions generated
+        previewToken: 6c8bd2f8-7f9a-4ef7-9cd9-7d8d12c03baf.4b2e4c76d081ef6f0cd4427547ea2c48c0fd32c9e15bb74c6471fc566fd0b8ce
     AuthUserResponse:
       type: object
       properties:
@@ -137,6 +206,40 @@ components:
           $ref: '#/components/schemas/AuthUser'
       required:
         - user
+      example:
+        user:
+          id: 9d0e8a69-5d42-46cf-9011-3642c3bfe6ef
+          email: user@example.com
+          role: user
+          roles:
+            - user
+    RegisterResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/AuthUser'
+        verificationRequired:
+          type: boolean
+          description: Siempre true en el flujo actual de registro.
+        message:
+          type: string
+        previewToken:
+          type: string
+          description: Solo disponible en development/test con EMAIL_DELIVERY_MODE=preview.
+      required:
+        - user
+        - verificationRequired
+        - message
+      example:
+        user:
+          id: 9d0e8a69-5d42-46cf-9011-3642c3bfe6ef
+          email: user@example.com
+          role: user
+          roles:
+            - user
+        verificationRequired: true
+        message: Verify your email before signing in
+        previewToken: 6c8bd2f8-7f9a-4ef7-9cd9-7d8d12c03baf.4b2e4c76d081ef6f0cd4427547ea2c48c0fd32c9e15bb74c6471fc566fd0b8ce
     SessionItem:
       type: object
       properties:
@@ -415,9 +518,11 @@ components:
 paths:
   /health:
     get:
+      operationId: getHealthStatus
       tags:
         - Health
       summary: Health check de servicio
+      security: []
       responses:
         '200':
           description: Dependencias operativas
@@ -425,9 +530,11 @@ paths:
           description: Alguna dependencia degradada
   /auth/register:
     post:
+      operationId: registerUser
       tags:
         - Auth
-      summary: Registro de usuario
+      summary: Registro de usuario con verificacion obligatoria de email
+      security: []
       requestBody:
         required: true
         content:
@@ -436,12 +543,36 @@ paths:
               $ref: '#/components/schemas/RegisterRequest'
       responses:
         '201':
-          description: Usuario registrado
+          description: Usuario registrado sin inicio de sesion automatico
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthUserResponse'
-        '400':
+                $ref: '#/components/schemas/RegisterResponse'
+              examples:
+                previewMode:
+                  summary: Registro exitoso en development/test
+                  value:
+                    user:
+                      id: 9d0e8a69-5d42-46cf-9011-3642c3bfe6ef
+                      email: user@example.com
+                      role: user
+                      roles:
+                        - user
+                    verificationRequired: true
+                    message: Verify your email before signing in
+                    previewToken: 6c8bd2f8-7f9a-4ef7-9cd9-7d8d12c03baf.4b2e4c76d081ef6f0cd4427547ea2c48c0fd32c9e15bb74c6471fc566fd0b8ce
+                productionMode:
+                  summary: Registro exitoso en produccion
+                  value:
+                    user:
+                      id: 9d0e8a69-5d42-46cf-9011-3642c3bfe6ef
+                      email: user@example.com
+                      role: user
+                      roles:
+                        - user
+                    verificationRequired: true
+                    message: Verify your email before signing in
+        '422':
           description: Datos invalidos
           content:
             application/json:
@@ -455,9 +586,11 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /auth/login:
     post:
+      operationId: loginUser
       tags:
         - Auth
       summary: Login local
+      security: []
       requestBody:
         required: true
         content:
@@ -481,6 +614,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Body invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '429':
           description: Throttling de login
           content:
@@ -489,6 +628,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /auth/refresh:
     post:
+      operationId: refreshSession
       tags:
         - Auth
       summary: Rotacion de refresh token
@@ -513,11 +653,11 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /auth/logout:
     post:
+      operationId: logoutSession
       tags:
         - Auth
-      summary: Logout de sesion actual
-      security:
-        - accessTokenCookie: []
+      summary: Logout idempotente de sesion actual
+      security: []
       responses:
         '200':
           description: Logout exitoso
@@ -525,14 +665,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MessageResponse'
-        '401':
-          description: No autenticado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Logged out successfully
   /auth/logout-all:
     post:
+      operationId: logoutAllSessions
       tags:
         - Auth
       summary: Logout de todas las sesiones del usuario
@@ -553,6 +690,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /auth/change-password:
     post:
+      operationId: changePassword
       tags:
         - Auth
       summary: Cambiar password y revocar sesiones activas
@@ -577,11 +715,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Body invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/forgot-password:
     post:
+      operationId: forgotPassword
       tags:
         - Auth
       summary: Genera instrucciones de recuperacion de password
+      security: []
       requestBody:
         required: true
         content:
@@ -594,7 +740,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MessageResponse'
+                $ref: '#/components/schemas/PreviewMessageResponse'
+              examples:
+                previewMode:
+                  summary: Development/test con preview token
+                  value:
+                    message: If the account exists, password reset instructions were generated
+                    previewToken: 6c8bd2f8-7f9a-4ef7-9cd9-7d8d12c03baf.4b2e4c76d081ef6f0cd4427547ea2c48c0fd32c9e15bb74c6471fc566fd0b8ce
+                productionMode:
+                  summary: Produccion sin exponer token
+                  value:
+                    message: If the account exists, password reset instructions were generated
         '422':
           description: Body invalido
           content:
@@ -609,9 +765,11 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /auth/reset-password:
     post:
+      operationId: resetPassword
       tags:
         - Auth
       summary: Resetea password usando token de un solo uso
+      security: []
       requestBody:
         required: true
         content:
@@ -639,9 +797,11 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /auth/verify-email:
     post:
+      operationId: verifyEmail
       tags:
         - Auth
       summary: Verifica email con token de un solo uso
+      security: []
       requestBody:
         required: true
         content:
@@ -669,26 +829,43 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /auth/resend-verification:
     post:
+      operationId: resendVerification
       tags:
         - Auth
       summary: Regenera instrucciones de verificacion de email
-      security:
-        - accessTokenCookie: []
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendVerificationRequest'
       responses:
         '200':
           description: Respuesta idempotente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MessageResponse'
-        '401':
-          description: No autenticado
+                $ref: '#/components/schemas/PreviewMessageResponse'
+              examples:
+                previewMode:
+                  summary: Development/test con preview token
+                  value:
+                    message: Verification instructions generated
+                    previewToken: 6c8bd2f8-7f9a-4ef7-9cd9-7d8d12c03baf.4b2e4c76d081ef6f0cd4427547ea2c48c0fd32c9e15bb74c6471fc566fd0b8ce
+                productionMode:
+                  summary: Produccion sin exponer token
+                  value:
+                    message: Verification instructions generated
+        '422':
+          description: Body invalido
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
   /auth/me:
     get:
+      operationId: getCurrentUser
       tags:
         - Auth
       summary: Usuario autenticado actual
@@ -709,6 +886,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /auth/me/email:
     patch:
+      operationId: changeEmail
       tags:
         - Auth
       summary: Cambia email y requiere re-verificacion
@@ -726,7 +904,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MessageResponse'
+                $ref: '#/components/schemas/PreviewMessageResponse'
+              examples:
+                previewMode:
+                  summary: Development/test con preview token
+                  value:
+                    message: Email updated. Re-verify your new email to reactivate access
+                    previewToken: 6c8bd2f8-7f9a-4ef7-9cd9-7d8d12c03baf.4b2e4c76d081ef6f0cd4427547ea2c48c0fd32c9e15bb74c6471fc566fd0b8ce
+                productionMode:
+                  summary: Produccion sin exponer token
+                  value:
+                    message: Email updated. Re-verify your new email to reactivate access
         '401':
           description: No autenticado
           content:
@@ -747,6 +935,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /auth/sessions:
     get:
+      operationId: listSessions
       tags:
         - Auth
       summary: Lista sesiones activas del usuario autenticado
@@ -767,6 +956,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /auth/sessions/{sessionId}:
     delete:
+      operationId: revokeSession
       tags:
         - Auth
       summary: Revoca una sesion especifica del usuario autenticado
@@ -800,6 +990,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /admin/roles:
     get:
+      operationId: listRoles
       tags:
         - Admin
       summary: Lista roles disponibles
@@ -826,6 +1017,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /admin/users:
     get:
+      operationId: listUsers
       tags:
         - Admin
       summary: Lista paginada de usuarios
@@ -889,6 +1081,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /admin/users/{userId}:
     get:
+      operationId: getUserProfile
       tags:
         - Admin
       summary: Perfil completo de un usuario
@@ -933,6 +1126,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     delete:
+      operationId: softDeleteUser
       tags:
         - Admin
       summary: Soft delete de un usuario
@@ -978,6 +1172,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /admin/users/{userId}/status:
     patch:
+      operationId: updateUserStatus
       tags:
         - Admin
       summary: Actualiza estado de un usuario
@@ -1035,6 +1230,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /admin/audit-logs:
     get:
+      operationId: listAuditLogs
       tags:
         - Admin
       summary: Consulta paginada de logs de auditoria
@@ -1128,6 +1324,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /admin/users/{userId}/roles:
     get:
+      operationId: listUserRoles
       tags:
         - Admin
       summary: Lista roles activos de un usuario
@@ -1166,6 +1363,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
     post:
+      operationId: assignUserRole
       tags:
         - Admin
       summary: Asigna un rol a un usuario
@@ -1223,6 +1421,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   /admin/users/{userId}/roles/{roleId}:
     delete:
+      operationId: revokeUserRole
       tags:
         - Admin
       summary: Revoca un rol activo de un usuario

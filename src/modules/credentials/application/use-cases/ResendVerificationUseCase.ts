@@ -3,57 +3,57 @@ import { randomBytes } from 'node:crypto'
 import { inject, injectable } from 'inversify'
 
 import { TYPES } from '../../../../container/types.js'
-import { UnauthorizedError } from '../../../../shared/errors/HttpErrors.js'
 import type { IAuthUnitOfWork } from '../../../../shared/domain/services/IAuthUnitOfWork.js'
-import type { ResendVerificationInputDto } from '../dtos/CredentialDtos.js'
+import type { IUserRepository } from '../../../identity/domain/repositories/IUserRepository.js'
+import { Email } from '../../../identity/domain/value-objects/Email.js'
+import type { IAuthEmailService } from '../../domain/services/IAuthEmailService.js'
+import type {
+  OneTimeTokenDispatchResultDto,
+  ResendVerificationInputDto,
+} from '../dtos/CredentialDtos.js'
 
 const EMAIL_VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000
 
 @injectable()
 export class ResendVerificationUseCase {
   public constructor(
+    @inject(TYPES.IUserRepository)
+    private readonly userRepository: IUserRepository,
     @inject(TYPES.IAuthUnitOfWork)
     private readonly authUnitOfWork: IAuthUnitOfWork,
+    @inject(TYPES.IAuthEmailService)
+    private readonly authEmailService: IAuthEmailService,
   ) {}
 
-  public async execute(input: ResendVerificationInputDto): Promise<void> {
-    await this.authUnitOfWork.run(
+  public async execute(
+    input: ResendVerificationInputDto,
+  ): Promise<OneTimeTokenDispatchResultDto> {
+    const email = new Email(input.email)
+    const user = await this.userRepository.findByEmail(email.value)
+
+    if (user === null || user.emailVerifiedAt !== null) {
+      return {
+        previewToken: null,
+      }
+    }
+
+    const plainToken = randomBytes(32).toString('hex')
+    const tokenHash = await argon2.hash(plainToken)
+    const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_TTL_MS)
+
+    const storedToken = await this.authUnitOfWork.run(
       async ({
         authAuditService,
         oneTimeTokenRepository,
-        userRepository,
         acquireUserMutationLock,
       }) => {
-        await acquireUserMutationLock(input.userId)
+        await acquireUserMutationLock(user.id)
+        await oneTimeTokenRepository.invalidateActiveByUserId(
+          user.id,
+          'email_verification',
+        )
 
-        const user = await userRepository.findById(input.userId)
-
-        if (user === null) {
-          throw new UnauthorizedError('User is no longer available')
-        }
-
-        if (user.emailVerifiedAt !== null) {
-          await authAuditService.recordEvent({
-            userId: user.id,
-            eventType: 'email_verification_resent',
-            eventStatus: 'success',
-            ipAddress: input.ipAddress,
-            userAgent: input.userAgent,
-            requestId: input.requestId,
-            metadata: {
-              skipped: true,
-              reason: 'already_verified',
-            },
-          })
-
-          return
-        }
-
-        const plainToken = randomBytes(32).toString('hex')
-        const tokenHash = await argon2.hash(plainToken)
-        const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_TTL_MS)
-
-        await oneTimeTokenRepository.create({
+        const createdToken = await oneTimeTokenRepository.create({
           userId: user.id,
           type: 'email_verification',
           tokenHash,
@@ -73,7 +73,17 @@ export class ResendVerificationUseCase {
             expiresAt: expiresAt.toISOString(),
           },
         })
+
+        return createdToken
       },
     )
+
+    return this.authEmailService.sendVerificationEmail({
+      email: user.email,
+      token: `${storedToken.id}.${plainToken}`,
+      expiresAt,
+      requestId: input.requestId,
+      reason: 'resend_verification',
+    })
   }
 }

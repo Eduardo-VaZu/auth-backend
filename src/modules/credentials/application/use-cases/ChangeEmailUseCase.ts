@@ -3,15 +3,19 @@ import { randomBytes } from 'node:crypto'
 import { inject, injectable } from 'inversify'
 
 import { TYPES } from '../../../../container/types.js'
-import type { ISessionStore } from '../../../access/domain/services/ISessionStore.js'
-import type { ITokenService } from '../../../access/domain/services/ITokenService.js'
-import { Email } from '../../../identity/domain/value-objects/Email.js'
 import type { IAuthUnitOfWork } from '../../../../shared/domain/services/IAuthUnitOfWork.js'
 import {
   ConflictError,
   UnauthorizedError,
 } from '../../../../shared/errors/HttpErrors.js'
-import type { ChangeEmailInputDto } from '../dtos/CredentialDtos.js'
+import type { ISessionStore } from '../../../access/domain/services/ISessionStore.js'
+import type { ITokenService } from '../../../access/domain/services/ITokenService.js'
+import { Email } from '../../../identity/domain/value-objects/Email.js'
+import type { IAuthEmailService } from '../../domain/services/IAuthEmailService.js'
+import type {
+  ChangeEmailInputDto,
+  OneTimeTokenDispatchResultDto,
+} from '../dtos/CredentialDtos.js'
 
 const EMAIL_VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000
 
@@ -34,17 +38,24 @@ export class ChangeEmailUseCase {
     private readonly sessionStore: ISessionStore,
     @inject(TYPES.IAuthUnitOfWork)
     private readonly authUnitOfWork: IAuthUnitOfWork,
+    @inject(TYPES.IAuthEmailService)
+    private readonly authEmailService: IAuthEmailService,
   ) {}
 
-  public async execute(input: ChangeEmailInputDto): Promise<void> {
+  public async execute(
+    input: ChangeEmailInputDto,
+  ): Promise<OneTimeTokenDispatchResultDto> {
     const nextEmail = new Email(input.email)
     const decodedAccessToken =
       input.accessToken === null
         ? null
         : this.tokenService.decodeAccessToken(input.accessToken)
     const revokedAt = new Date()
+    const plainToken = randomBytes(32).toString('hex')
+    const tokenHash = await argon2.hash(plainToken)
+    const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_TTL_MS)
 
-    await this.authUnitOfWork.run(
+    const verificationTokenId = await this.authUnitOfWork.run(
       async ({
         authAuditService,
         oneTimeTokenRepository,
@@ -73,10 +84,6 @@ export class ChangeEmailUseCase {
           throw new ConflictError('Email is already in use')
         }
 
-        const plainToken = randomBytes(32).toString('hex')
-        const tokenHash = await argon2.hash(plainToken)
-        const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_TTL_MS)
-
         try {
           await userRepository.updateEmailForReverification({
             userId: user.id,
@@ -90,7 +97,13 @@ export class ChangeEmailUseCase {
 
           throw error
         }
-        await oneTimeTokenRepository.create({
+
+        await oneTimeTokenRepository.invalidateActiveByUserId(
+          user.id,
+          'email_verification',
+          revokedAt,
+        )
+        const verificationToken = await oneTimeTokenRepository.create({
           userId: user.id,
           type: 'email_verification',
           tokenHash,
@@ -134,8 +147,18 @@ export class ChangeEmailUseCase {
             sessionKey: input.sessionKey,
           },
         })
+
+        return verificationToken.id
       },
     )
+
+    const dispatchResult = await this.authEmailService.sendVerificationEmail({
+      email: nextEmail.value,
+      token: `${verificationTokenId}.${plainToken}`,
+      expiresAt,
+      requestId: input.requestId,
+      reason: 'email_change',
+    })
 
     await this.sessionStore.deleteAllRefreshTokens(input.userId)
 
@@ -152,5 +175,7 @@ export class ChangeEmailUseCase {
         )
       }
     }
+
+    return dispatchResult
   }
 }

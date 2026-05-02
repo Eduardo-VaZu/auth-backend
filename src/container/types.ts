@@ -18,6 +18,7 @@ export const TYPES = {
   IAuthAuditService: Symbol.for('IAuthAuditService'),
   IAuthUnitOfWork: Symbol.for('IAuthUnitOfWork'),
   ISecurityThrottleService: Symbol.for('ISecurityThrottleService'),
+  IAuthEmailService: Symbol.for('IAuthEmailService'),
 
   // Use Cases
   RegisterUseCase: Symbol.for('RegisterUseCase'),
