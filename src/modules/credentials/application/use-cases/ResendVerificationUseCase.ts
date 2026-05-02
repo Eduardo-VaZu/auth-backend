@@ -42,7 +42,11 @@ export class ResendVerificationUseCase {
     const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_TTL_MS)
 
     const storedToken = await this.authUnitOfWork.run(
-      async ({ authAuditService, oneTimeTokenRepository, acquireUserMutationLock }) => {
+      async ({
+        authAuditService,
+        oneTimeTokenRepository,
+        acquireUserMutationLock,
+      }) => {
         await acquireUserMutationLock(user.id)
         await oneTimeTokenRepository.invalidateActiveByUserId(
           user.id,

@@ -6,9 +6,9 @@ Describe en 1-3 lineas por que existe este PR y que problema resuelve.
 
 ## Resumen De Cambios
 
-- 
-- 
-- 
+-
+-
+-
 
 ## Tipo De Cambio
 
@@ -32,13 +32,13 @@ Describe en 1-3 lineas por que existe este PR y que problema resuelve.
 
 ### Archivos Fuente Principales
 
-- 
-- 
+-
+-
 
 ### Archivos De Prueba Agregados O Actualizados
 
-- 
-- 
+-
+-
 
 ### Endpoints / Flujos Afectados
 
@@ -69,8 +69,8 @@ Describe en 1-3 lineas por que existe este PR y que problema resuelve.
 
 Suites:
 
-- 
-- 
+-
+-
 
 ### Integracion
 
@@ -80,25 +80,25 @@ Suites:
 
 Suites:
 
-- 
-- 
+-
+-
 
 ## Validaciones Ejecutadas
 
 Marca lo ejecutado y agrega un resultado breve.
 
 - [ ] `npm run type:check`
-  Resultado:
+      Resultado:
 - [ ] `npm run lint`
-  Resultado:
+      Resultado:
 - [ ] `npm run test:unit`
-  Resultado:
+      Resultado:
 - [ ] `npm run test:integration`
-  Resultado:
+      Resultado:
 - [ ] `npm run pr:check`
-  Resultado:
+      Resultado:
 - [ ] `npm run build`
-  Resultado:
+      Resultado:
 
 ## Contrato Y Documentacion
 

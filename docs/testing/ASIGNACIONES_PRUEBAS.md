@@ -33,13 +33,13 @@ npm run build
 
 ## Distribucion Por Integrante
 
-| Integrante | Area | Documento | Validacion principal |
-| --- | --- | --- | --- |
-| 1 | `health + identity` | `docs/testing/integrante-1-health-identity.md` | `npm run test:unit` |
-| 2 | `access login + token` | `docs/testing/integrante-2-access-login-token.md` | `npm run test:unit` |
-| 3 | `access sesiones + logout` | `docs/testing/integrante-3-access-sessions-logout.md` | `npm run test:integration` |
-| 4 | `credentials + email delivery` | `docs/testing/integrante-4-credentials-email.md` | `npm run test:unit` |
-| 5 | `admin + audit + infra + ci` | `docs/testing/integrante-5-admin-audit-infra-ci.md` | `npm run pr:check` |
+| Integrante | Area                           | Documento                                             | Validacion principal       |
+| ---------- | ------------------------------ | ----------------------------------------------------- | -------------------------- |
+| 1          | `health + identity`            | `docs/testing/integrante-1-health-identity.md`        | `npm run test:unit`        |
+| 2          | `access login + token`         | `docs/testing/integrante-2-access-login-token.md`     | `npm run test:unit`        |
+| 3          | `access sesiones + logout`     | `docs/testing/integrante-3-access-sessions-logout.md` | `npm run test:integration` |
+| 4          | `credentials + email delivery` | `docs/testing/integrante-4-credentials-email.md`      | `npm run test:unit`        |
+| 5          | `admin + audit + infra + ci`   | `docs/testing/integrante-5-admin-audit-infra-ci.md`   | `npm run pr:check`         |
 
 ## Documentacion De Testing
 

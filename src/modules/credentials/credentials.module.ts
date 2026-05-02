@@ -22,7 +22,9 @@ export const configureCredentialsModule = (container: Container): void => {
   container
     .bind<IOneTimeTokenRepository>(TYPES.IOneTimeTokenRepository)
     .to(OneTimeTokenRepository)
-  container.bind<IAuthEmailService>(TYPES.IAuthEmailService).to(AuthEmailService)
+  container
+    .bind<IAuthEmailService>(TYPES.IAuthEmailService)
+    .to(AuthEmailService)
   container
     .bind<ChangePasswordUseCase>(TYPES.ChangePasswordUseCase)
     .to(ChangePasswordUseCase)

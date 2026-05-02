@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { AuthRepositories, IAuthUnitOfWork } from '@/shared/domain/services/IAuthUnitOfWork.js'
+import type {
+  AuthRepositories,
+  IAuthUnitOfWork,
+} from '@/shared/domain/services/IAuthUnitOfWork.js'
 import { ForgotPasswordUseCase } from '@/modules/credentials/application/use-cases/ForgotPasswordUseCase.js'
 import type { IAuthEmailService } from '@/modules/credentials/domain/services/IAuthEmailService.js'
 import type { IUserRepository } from '@/modules/identity/domain/repositories/IUserRepository.js'
@@ -85,9 +88,7 @@ describe('ForgotPasswordUseCase', () => {
       expect.objectContaining({
         email: existingUser.email,
         requestId: '66666666-6666-4666-8666-666666666666',
-        token: expect.stringMatching(
-          /^55555555-5555-4555-8555-555555555555\./,
-        ),
+        token: expect.stringMatching(/^55555555-5555-4555-8555-555555555555\./),
       }),
     )
     expect(result).toEqual({

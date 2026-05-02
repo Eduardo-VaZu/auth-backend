@@ -9,21 +9,22 @@ import { User } from '@/modules/identity/domain/entities/User.js'
 
 describe('RegisterUseCase', () => {
   it('creates a pending verification user and dispatches a verification token', async () => {
-    const createUser = vi.fn((params: { email: string; role?: string; status?: string }) =>
-      Promise.resolve(
-        new User({
-          id: '11111111-1111-4111-8111-111111111111',
-          email: params.email,
-          roles: ['user'],
-          status: 'pending_verification',
-          authzVersion: 1,
-          emailVerifiedAt: null,
-          lastLoginAt: null,
-          createdAt: new Date('2026-05-01T00:00:00.000Z'),
-          updatedAt: new Date('2026-05-01T00:00:00.000Z'),
-          deletedAt: null,
-        }),
-      ),
+    const createUser = vi.fn(
+      (params: { email: string; role?: string; status?: string }) =>
+        Promise.resolve(
+          new User({
+            id: '11111111-1111-4111-8111-111111111111',
+            email: params.email,
+            roles: ['user'],
+            status: 'pending_verification',
+            authzVersion: 1,
+            emailVerifiedAt: null,
+            lastLoginAt: null,
+            createdAt: new Date('2026-05-01T00:00:00.000Z'),
+            updatedAt: new Date('2026-05-01T00:00:00.000Z'),
+            deletedAt: null,
+          }),
+        ),
     )
     const createCredential = vi.fn(() => Promise.resolve({}))
     const invalidateActiveByUserId = vi.fn(() => Promise.resolve())
@@ -92,9 +93,7 @@ describe('RegisterUseCase', () => {
         email: 'user@example.com',
         reason: 'register',
         requestId: '33333333-3333-4333-8333-333333333333',
-        token: expect.stringMatching(
-          /^22222222-2222-4222-8222-222222222222\./,
-        ),
+        token: expect.stringMatching(/^22222222-2222-4222-8222-222222222222\./),
       }),
     )
     expect(result).toEqual({

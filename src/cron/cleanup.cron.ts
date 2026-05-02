@@ -18,9 +18,8 @@ export const startCleanupCron = (logger: Logger): ScheduledTask => {
           now.getTime() - env.EXPIRED_SESSION_RETENTION_SECONDS * 1000,
         )
         const deletedTokens = await refreshTokenRepository.deleteExpired(now)
-        const deletedSessions = await userSessionRepository.deleteExpired(
-          sessionReferenceDate,
-        )
+        const deletedSessions =
+          await userSessionRepository.deleteExpired(sessionReferenceDate)
 
         logger.info(
           {

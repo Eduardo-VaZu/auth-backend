@@ -28,7 +28,7 @@ Este directorio contiene la especificacion OpenAPI del backend de autenticacion.
 - Se actualizaron respuestas de:
   - `POST /auth/forgot-password`
   - `PATCH /auth/me/email`
-  para reflejar `previewToken` opcional en development/test.
+    para reflejar `previewToken` opcional en development/test.
 - Se agregaron codigos `422` en endpoints con `validateBody` donde faltaban.
 - Se agregaron ejemplos de request/response para los endpoints sensibles del flujo auth.
 

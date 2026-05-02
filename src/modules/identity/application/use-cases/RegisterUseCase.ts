@@ -34,7 +34,11 @@ export class RegisterUseCase {
     const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_TTL_MS)
 
     const { user, verificationTokenId } = await this.authUnitOfWork.run(
-      async ({ oneTimeTokenRepository, userCredentialRepository, userRepository }) => {
+      async ({
+        oneTimeTokenRepository,
+        userCredentialRepository,
+        userRepository,
+      }) => {
         const existingUser = await userRepository.findByEmail(email.value)
 
         if (existingUser !== null) {
