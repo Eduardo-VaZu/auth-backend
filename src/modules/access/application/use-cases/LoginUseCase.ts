@@ -24,7 +24,7 @@ const TOO_MANY_ATTEMPTS_MESSAGE = 'Too many login attempts. Try again later.'
 
 const getDeviceName = (userAgent: string | null): string | null => {
   if (!userAgent) return null
-  
+
   let os = 'Unknown OS'
   if (userAgent.includes('Win')) os = 'Windows'
   else if (userAgent.includes('Mac')) os = 'macOS'
@@ -36,8 +36,10 @@ const getDeviceName = (userAgent: string | null): string | null => {
   if (userAgent.includes('Edg/')) browser = 'Edge'
   else if (userAgent.includes('Chrome/')) browser = 'Chrome'
   else if (userAgent.includes('Firefox/')) browser = 'Firefox'
-  else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome/')) browser = 'Safari'
-  else if (userAgent.includes('Opera/') || userAgent.includes('OPR/')) browser = 'Opera'
+  else if (userAgent.includes('Safari/') && !userAgent.includes('Chrome/'))
+    browser = 'Safari'
+  else if (userAgent.includes('Opera/') || userAgent.includes('OPR/'))
+    browser = 'Opera'
 
   return `${os} · ${browser}`
 }
