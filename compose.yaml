@@ -9,7 +9,7 @@ services:
       - .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/auth_backend
+      DATABASE_URL: postgresql://postgres:admin@postgres:5432/auth_backend
       REDIS_URL: redis://redis:6379
     ports:
       - '${PORT:-4000}:${PORT:-4000}'
