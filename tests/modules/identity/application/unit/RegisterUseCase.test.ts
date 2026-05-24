@@ -6,9 +6,10 @@ import type { IAuthUnitOfWork } from '@/shared/domain/services/IAuthUnitOfWork.j
 import { OneTimeToken } from '@/modules/credentials/domain/entities/OneTimeToken.js'
 import type { IAuthEmailService } from '@/modules/credentials/domain/services/IAuthEmailService.js'
 import { User } from '@/modules/identity/domain/entities/User.js'
+import { UserAlreadyExistsError } from '@/shared/domain/errors/DomainErrors.js'
 
 describe('RegisterUseCase', () => {
-  it('creates a pending verification user and dispatches a verification token', async () => {
+  it('Caso CP-01: Registro Exitoso de Usuario', async () => {
     const createUser = vi.fn(
       (params: { email: string; role?: string; status?: string }) =>
         Promise.resolve(
@@ -73,33 +74,40 @@ describe('RegisterUseCase', () => {
     const useCase = new RegisterUseCase(authUnitOfWork, authEmailService)
 
     const result = await useCase.execute({
-      email: 'user@example.com',
-      password: 'very-secure-password',
+      email: 'nuevo@usuario.com',
+      password: 'P@ssw0rd2026!',
       requestId: '33333333-3333-4333-8333-333333333333',
     })
 
+    // Creación de usuario en estado pending_verification
     expect(createUser).toHaveBeenCalledWith({
-      email: 'user@example.com',
+      email: 'nuevo@usuario.com',
       role: 'user',
       status: 'pending_verification',
     })
     expect(createCredential).toHaveBeenCalledOnce()
+    
+    // Generación de un OneTimeToken de tipo email_verification
     expect(invalidateActiveByUserId).toHaveBeenCalledWith(
       '11111111-1111-4111-8111-111111111111',
       'email_verification',
     )
+    expect(createOneTimeToken).toHaveBeenCalledOnce()
+
+    // Llamada exitosa al AuthEmailService para envío de link de activación
     expect(authEmailService.sendVerificationEmail).toHaveBeenCalledWith(
       expect.objectContaining({
-        email: 'user@example.com',
+        email: 'nuevo@usuario.com',
         reason: 'register',
         requestId: '33333333-3333-4333-8333-333333333333',
         token: expect.stringMatching(/^22222222-2222-4222-8222-222222222222\./),
       }),
     )
+
     expect(result).toEqual({
       user: {
         id: '11111111-1111-4111-8111-111111111111',
-        email: 'user@example.com',
+        email: 'nuevo@usuario.com',
         role: 'user',
         roles: ['user'],
       },
@@ -107,5 +115,67 @@ describe('RegisterUseCase', () => {
       message: 'Verify your email before signing in',
       previewToken: '22222222-2222-4222-8222-222222222222.secret',
     })
+  })
+
+  it('Caso CP-02: Registro con Email Duplicado', async () => {
+    const findByEmail = vi.fn(() =>
+      Promise.resolve(
+        new User({
+          id: '11111111-1111-4111-8111-111111111111',
+          email: 'ya_registrado@ejemplo.com',
+          roles: ['user'],
+          status: 'active',
+          authzVersion: 1,
+          emailVerifiedAt: new Date(),
+          lastLoginAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          deletedAt: null,
+        }),
+      ),
+    )
+    const createUser = vi.fn()
+    const createCredential = vi.fn()
+    const createOneTimeToken = vi.fn()
+
+    const repositories = {
+      userRepository: {
+        findByEmail,
+        create: createUser,
+      },
+      userCredentialRepository: {
+        create: createCredential,
+      },
+      oneTimeTokenRepository: {
+        invalidateActiveByUserId: vi.fn(),
+        create: createOneTimeToken,
+      },
+    } as unknown as AuthRepositories
+
+    const authUnitOfWork: IAuthUnitOfWork = {
+      run: async (callback) => callback(repositories),
+    }
+
+    const authEmailService: IAuthEmailService = {
+      sendVerificationEmail: vi.fn(),
+      sendPasswordResetEmail: vi.fn(),
+    }
+
+    const useCase = new RegisterUseCase(authUnitOfWork, authEmailService)
+
+    // El sistema debe detener el flujo y lanzar la excepción UserAlreadyExistsError.
+    await expect(
+      useCase.execute({
+        email: 'ya_registrado@ejemplo.com',
+        password: 'P@ssw0rd2026!',
+        requestId: '33333333-3333-4333-8333-333333333333',
+      })
+    ).rejects.toThrowError(UserAlreadyExistsError)
+
+    // No debe realizarse ninguna llamada a la creación de credenciales ni envío de correos.
+    expect(createUser).not.toHaveBeenCalled()
+    expect(createCredential).not.toHaveBeenCalled()
+    expect(createOneTimeToken).not.toHaveBeenCalled()
+    expect(authEmailService.sendVerificationEmail).not.toHaveBeenCalled()
   })
 })
