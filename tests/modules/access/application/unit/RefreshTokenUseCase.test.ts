@@ -2,6 +2,12 @@ import { describe, expect, it, vi } from 'vitest'
 import { RefreshTokenUseCase } from '@/modules/access/application/use-cases/RefreshTokenUseCase.js'
 import { UnauthorizedError } from '@/shared/errors/HttpErrors.js'
 
+import type { IRefreshTokenRepository } from '@/modules/access/domain/repositories/IRefreshTokenRepository.js'
+import type { IUserRepository } from '@/modules/identity/domain/repositories/IUserRepository.js'
+import type { ITokenService } from '@/modules/access/domain/services/ITokenService.js'
+import type { ISessionStore } from '@/modules/access/domain/services/ISessionStore.js'
+import type { IAuthUnitOfWork } from '@/shared/domain/services/IAuthUnitOfWork.js'
+
 describe('RefreshTokenUseCase', () => {
   it('Caso CP-04: Refresco de Token Expirado', async () => {
     // Setup
@@ -56,11 +62,11 @@ describe('RefreshTokenUseCase', () => {
     }
 
     const useCase = new RefreshTokenUseCase(
-      refreshTokenRepository as any,
-      {} as any,
-      tokenService as any,
-      sessionStore as any,
-      authUnitOfWork as any,
+      refreshTokenRepository as unknown as IRefreshTokenRepository,
+      {} as unknown as IUserRepository,
+      tokenService as unknown as ITokenService,
+      sessionStore as unknown as ISessionStore,
+      authUnitOfWork,
     )
 
     // Act & Assert

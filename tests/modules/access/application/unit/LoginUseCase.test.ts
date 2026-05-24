@@ -4,6 +4,14 @@ import { LoginUseCase } from '@/modules/access/application/use-cases/LoginUseCas
 import { User } from '@/modules/identity/domain/entities/User.js'
 import { UnauthorizedError } from '@/shared/errors/HttpErrors.js'
 
+import type { IUserRepository } from '@/modules/identity/domain/repositories/IUserRepository.js'
+import type { IUserCredentialRepository } from '@/modules/credentials/domain/repositories/IUserCredentialRepository.js'
+import type { ITokenService } from '@/modules/access/domain/services/ITokenService.js'
+import type { ISessionStore } from '@/modules/access/domain/services/ISessionStore.js'
+import type { IAuthAuditService } from '@/modules/audit/domain/services/IAuthAuditService.js'
+import type { IAuthUnitOfWork } from '@/shared/domain/services/IAuthUnitOfWork.js'
+import type { ISecurityThrottleService } from '@/modules/access/domain/services/ISecurityThrottleService.js'
+
 describe('LoginUseCase', () => {
   it('Caso CP-03: Login con Credenciales Inválidas', async () => {
     // Generate a valid Argon2 hash to avoid byteLength / format errors in argon2.verify
@@ -85,13 +93,13 @@ describe('LoginUseCase', () => {
     }
 
     const useCase = new LoginUseCase(
-      { findByEmail } as any,
-      { findByUserId } as any,
-      tokenService as any,
-      sessionStore as any,
-      authAuditService as any,
-      authUnitOfWork as any,
-      securityThrottleService as any,
+      { findByEmail } as unknown as IUserRepository,
+      { findByUserId } as unknown as IUserCredentialRepository,
+      tokenService as unknown as ITokenService,
+      sessionStore as unknown as ISessionStore,
+      authAuditService as unknown as IAuthAuditService,
+      authUnitOfWork,
+      securityThrottleService,
     )
 
     // Act & Assert

@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import { LogoutUseCase } from '@/modules/access/application/use-cases/LogoutUseCase.js'
 
+import type { ITokenService } from '@/modules/access/domain/services/ITokenService.js'
+import type { ISessionStore } from '@/modules/access/domain/services/ISessionStore.js'
+import type { IAuthUnitOfWork } from '@/shared/domain/services/IAuthUnitOfWork.js'
+
 describe('LogoutUseCase', () => {
   it('Caso CP-05: Cierre de Sesión Única (Logout)', async () => {
     // Setup mocks
@@ -74,9 +78,9 @@ describe('LogoutUseCase', () => {
     }
 
     const useCase = new LogoutUseCase(
-      tokenService as any,
-      sessionStore as any,
-      authUnitOfWork as any,
+      tokenService as unknown as ITokenService,
+      sessionStore as unknown as ISessionStore,
+      authUnitOfWork,
     )
 
     // Act
