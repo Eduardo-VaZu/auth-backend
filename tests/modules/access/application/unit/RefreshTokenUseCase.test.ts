@@ -19,7 +19,7 @@ describe('RefreshTokenUseCase', () => {
     }
 
     const verifyRefreshToken = vi.fn(() => Promise.resolve(payload))
-    
+
     // El repositorio devuelve que el token ya expiró en su metadata
     const findByJti = vi.fn(() =>
       Promise.resolve({
@@ -33,7 +33,7 @@ describe('RefreshTokenUseCase', () => {
         replacedByTokenId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      }),
     )
 
     // El token aún existe en Redis
@@ -77,7 +77,7 @@ describe('RefreshTokenUseCase', () => {
         ipAddress: '127.0.0.1',
         userAgent: 'Mozilla',
         requestId: 'req-123',
-      })
+      }),
     ).rejects.toThrowError(UnauthorizedError)
 
     expect(verifyRefreshToken).toHaveBeenCalledWith(expiredToken)

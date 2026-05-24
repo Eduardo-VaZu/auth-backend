@@ -42,7 +42,7 @@ describe('LoginUseCase', () => {
         mustChangePassword: false,
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      }),
     )
 
     const checkLoginAllowed = vi.fn(() =>
@@ -51,7 +51,7 @@ describe('LoginUseCase', () => {
         ipLocked: false,
         accountTtlSeconds: 0,
         ipTtlSeconds: 0,
-      })
+      }),
     )
     const recordLoginFailure = vi.fn(() =>
       Promise.resolve({
@@ -63,7 +63,7 @@ describe('LoginUseCase', () => {
         ipLockTtlSeconds: 0,
         passwordSprayingDetected: false,
         distinctAccountsFromIp: 1,
-      })
+      }),
     )
 
     const recordEvent = vi.fn(() => Promise.resolve())
@@ -111,7 +111,7 @@ describe('LoginUseCase', () => {
         ipAddress: '127.0.0.1',
         userAgent: 'Mozilla/5.0',
         requestId: '33333333-3333-4333-8333-333333333333',
-      })
+      }),
     ).rejects.toThrowError(UnauthorizedError)
 
     // Validar la existencia del usuario mediante userRepository

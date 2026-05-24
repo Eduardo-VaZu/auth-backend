@@ -86,7 +86,7 @@ describe('RegisterUseCase', () => {
       status: 'pending_verification',
     })
     expect(createCredential).toHaveBeenCalledOnce()
-    
+
     // Generación de un OneTimeToken de tipo email_verification
     expect(invalidateActiveByUserId).toHaveBeenCalledWith(
       '11111111-1111-4111-8111-111111111111',
@@ -169,7 +169,7 @@ describe('RegisterUseCase', () => {
         email: 'ya_registrado@ejemplo.com',
         password: 'P@ssw0rd2026!',
         requestId: '33333333-3333-4333-8333-333333333333',
-      })
+      }),
     ).rejects.toThrowError(UserAlreadyExistsError)
 
     // No debe realizarse ninguna llamada a la creación de credenciales ni envío de correos.

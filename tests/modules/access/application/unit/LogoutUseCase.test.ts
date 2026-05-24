@@ -9,13 +9,13 @@ describe('LogoutUseCase', () => {
   it('Caso CP-05: Cierre de Sesión Única (Logout)', async () => {
     // Setup mocks
     const decodeAccessToken = vi.fn(() => null)
-    
+
     const verifyRefreshToken = vi.fn(() =>
       Promise.resolve({
         userId: 'user-123',
         jti: 'jti-123',
         exp: 9999999999,
-      })
+      }),
     )
 
     const findByJti = vi.fn(() =>
@@ -30,7 +30,7 @@ describe('LogoutUseCase', () => {
         replacedByTokenId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-      })
+      }),
     )
 
     const revokeByJti = vi.fn(() => Promise.resolve())
@@ -41,7 +41,7 @@ describe('LogoutUseCase', () => {
         userId: 'user-123',
         sessionKey: 'session-key-123',
         isActive: () => true,
-      })
+      }),
     )
 
     const tokenService = {
