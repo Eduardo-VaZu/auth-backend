@@ -84,6 +84,9 @@ export class RefreshTokenUseCase {
     }
 
     if (!existsInRedis || storedRefreshToken.expiresAt <= new Date()) {
+      if (existsInRedis) {
+        await this.sessionStore.deleteRefreshToken(payload.userId, payload.jti)
+      }
       throw new UnauthorizedError('Refresh token is invalid or expired')
     }
 
