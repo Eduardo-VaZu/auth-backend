@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { Email } from '@/modules/identity/domain/value-objects/Email.js'
 import { User } from '@/modules/identity/domain/entities/User.js'
-import type { UserProps, UserRole } from '@/modules/identity/domain/entities/User.js'
+import type {
+  UserProps,
+  UserRole,
+} from '@/modules/identity/domain/entities/User.js'
 
 describe('Identity Domain', () => {
   describe('Value Object: Email', () => {
@@ -43,7 +46,11 @@ describe('Identity Domain', () => {
     })
 
     it('canAuthenticate is false if user is deleted', () => {
-      const user = new User({ ...baseProps, status: 'active', deletedAt: new Date() })
+      const user = new User({
+        ...baseProps,
+        status: 'active',
+        deletedAt: new Date(),
+      })
       expect(user.canAuthenticate()).toBe(false)
     })
 
@@ -54,12 +61,18 @@ describe('Identity Domain', () => {
       const lockedUser = new User({ ...baseProps, status: 'locked' })
       expect(lockedUser.canAuthenticate()).toBe(false)
 
-      const pendingUser = new User({ ...baseProps, status: 'pending_verification' })
+      const pendingUser = new User({
+        ...baseProps,
+        status: 'pending_verification',
+      })
       expect(pendingUser.canAuthenticate()).toBe(false)
     })
 
     it('primaryRole returns the first role or fallback "user"', () => {
-      const userWithRoles = new User({ ...baseProps, roles: ['admin', 'user'] as UserRole[] })
+      const userWithRoles = new User({
+        ...baseProps,
+        roles: ['admin', 'user'] as UserRole[],
+      })
       expect(userWithRoles.primaryRole()).toBe('admin')
 
       const userWithoutRoles = new User({ ...baseProps, roles: [] })
