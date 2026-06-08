@@ -7,6 +7,7 @@ import { GenericContainer, type StartedTestContainer } from 'testcontainers'
 
 describe('Register Flow Integration (HTTP & Testcontainers)', () => {
   let app: Express
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let redisClient: any
   let pgContainer: StartedPostgreSqlContainer
   let redisContainer: StartedTestContainer
