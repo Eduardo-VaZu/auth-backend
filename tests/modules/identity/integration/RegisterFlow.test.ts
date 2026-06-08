@@ -32,7 +32,9 @@ describe('Register Flow Integration (HTTP & Testcontainers)', () => {
     console.log(
       '\n[AUDIT] ====================================================',
     )
-    console.log('[AUDIT] Starting Testcontainers and configuring environment...')
+    console.log(
+      '[AUDIT] Starting Testcontainers and configuring environment...',
+    )
 
     // 1. Start containers
     pgContainer = await new PostgreSqlContainer('postgres:16-alpine').start()
