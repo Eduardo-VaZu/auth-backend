@@ -32,21 +32,21 @@ describe('Register Flow Integration (HTTP & Testcontainers)', () => {
     console.log(
       '\n[AUDIT] ====================================================',
     )
-    console.log('[AUDIT] Levantando Testcontainers y configurando entorno...')
+    console.log('[AUDIT] Starting Testcontainers and configuring environment...')
 
-    // 1. Levantar contenedores
+    // 1. Start containers
     pgContainer = await new PostgreSqlContainer('postgres:16-alpine').start()
     redisContainer = await new GenericContainer('redis:7-alpine')
       .withExposedPorts(6379)
       .start()
 
-    // 2. Configurar variables de entorno ANTES de importar los módulos del proyecto
+    // 2. Set environment variables BEFORE importing project modules
     process.env.DATABASE_URL = pgContainer.getConnectionUri()
     process.env.REDIS_URL = `redis://${redisContainer.getHost()}:${redisContainer.getMappedPort(6379)}`
 
-    console.log(`[AUDIT] ✔️ Contenedores listos: ${process.env.DATABASE_URL}`)
+    console.log(`[AUDIT] ✔️ Containers ready: ${process.env.DATABASE_URL}`)
 
-    // 3. Importación dinámica (Lazy loading)
+    // 3. Dynamic Import (Lazy loading)
     const { pool } = await import('@/infrastructure/db/db.js')
     const { drizzle } = await import('drizzle-orm/node-postgres')
     const { migrate } = await import('drizzle-orm/node-postgres/migrator')
@@ -54,20 +54,20 @@ describe('Register Flow Integration (HTTP & Testcontainers)', () => {
     const { container } = await import('@/container/inversify.config.js')
     const { TYPES } = await import('@/container/types.js')
 
-    // 4. Ejecutar Migraciones (¡Esto soluciona el error de "users relation does not exist"!)
-    console.log('[AUDIT] Ejecutando migraciones de Drizzle...')
+    // 4. Run Drizzle Migrations
+    console.log('[AUDIT] Running Drizzle migrations...')
     const db = drizzle({ client: pool })
     await migrate(db, { migrationsFolder: './drizzle' })
-    console.log('[AUDIT] ✔️ Migraciones aplicadas con éxito.')
+    console.log('[AUDIT] ✔️ Migrations applied successfully.')
 
-    // 5. Inicializar App
+    // 5. Initialize App
     redisClient = container.get(TYPES.RedisClient)
     if (!redisClient.isOpen) {
       await redisClient.connect()
     }
     app = createApp(container)
 
-    console.log('[AUDIT] ✔️ Aplicación inicializada. Entorno listo.')
+    console.log('[AUDIT] ✔️ Application initialized. Environment ready.')
     console.log(
       '[AUDIT] ====================================================\n',
     )
@@ -77,13 +77,13 @@ describe('Register Flow Integration (HTTP & Testcontainers)', () => {
     console.log(
       '\n[AUDIT] ====================================================',
     )
-    console.log('[AUDIT] Finalizando pruebas. Limpiando contenedores...')
+    console.log('[AUDIT] Finishing tests. Cleaning up containers...')
     const { pool } = await import('@/infrastructure/db/db.js')
     await pool.end()
     if (redisClient?.isOpen) await redisClient.disconnect()
     if (pgContainer) await pgContainer.stop()
     if (redisContainer) await redisContainer.stop()
-    console.log('[AUDIT] ✔️ Contenedores destruidos.')
+    console.log('[AUDIT] ✔️ Containers destroyed.')
     console.log(
       '[AUDIT] ====================================================\n',
     )
@@ -96,14 +96,14 @@ describe('Register Flow Integration (HTTP & Testcontainers)', () => {
     console.log('[TEST] ------------------------------------------------\n'),
   )
 
-  it('GET /health -> retorna 200 con payload esperado', async () => {
+  it('GET /health -> returns 200 with expected payload', async () => {
     console.log('[AUDIT] Test: GET /health')
     const response = await request(app).get('/health')
     expect(response.status).toBe(200)
     expect(response.body).toEqual(expect.objectContaining({ status: 'ok' }))
   })
 
-  it('POST /auth/register -> falla con 400 ante payload invalido', async () => {
+  it('POST /auth/register -> fails with 422 on invalid payload', async () => {
     console.log('[AUDIT] Test: POST /auth/register (Invalid Payload)')
     const response = await request(app)
       .post('/auth/register')
@@ -111,9 +111,9 @@ describe('Register Flow Integration (HTTP & Testcontainers)', () => {
     expect(response.status).toBe(422)
   })
 
-  it('POST /auth/register -> crea usuario, retorna 201 y NO setea cookies de login', async () => {
+  it('POST /auth/register -> creates user, returns 201 and does NOT set login cookies', async () => {
     console.log(
-      `[AUDIT] Test: POST /auth/register (Registro correcto: ${testUser.email})`,
+      `[AUDIT] Test: POST /auth/register (Successful registration: ${testUser.email})`,
     )
     const response = await request(app).post('/auth/register').send(testUser)
 
@@ -131,14 +131,14 @@ describe('Register Flow Integration (HTTP & Testcontainers)', () => {
     }
   })
 
-  it('POST /auth/register -> rechaza email duplicado con 409', async () => {
-    console.log('[AUDIT] Test: POST /auth/register (Email duplicado)')
+  it('POST /auth/register -> rejects duplicate email with 409', async () => {
+    console.log('[AUDIT] Test: POST /auth/register (Duplicate email)')
     const response = await request(app).post('/auth/register').send(testUser)
     expect(response.status).toBe(409)
   })
 
-  it('GET /auth/me -> retorna 401 sin login despues de registro', async () => {
-    console.log('[AUDIT] Test: GET /auth/me (No autorizado)')
+  it('GET /auth/me -> returns 401 without login after registration', async () => {
+    console.log('[AUDIT] Test: GET /auth/me (Unauthorized)')
     const response = await request(app).get('/auth/me')
     expect(response.status).toBe(401)
   })
