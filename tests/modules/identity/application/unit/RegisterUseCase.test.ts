@@ -79,7 +79,6 @@ describe('RegisterUseCase', () => {
       requestId: '33333333-3333-4333-8333-333333333333',
     })
 
-    // Creación de usuario en estado pending_verification
     expect(createUser).toHaveBeenCalledWith({
       email: 'nuevo@usuario.com',
       role: 'user',
@@ -87,14 +86,12 @@ describe('RegisterUseCase', () => {
     })
     expect(createCredential).toHaveBeenCalledOnce()
 
-    // Generación de un OneTimeToken de tipo email_verification
     expect(invalidateActiveByUserId).toHaveBeenCalledWith(
       '11111111-1111-4111-8111-111111111111',
       'email_verification',
     )
     expect(createOneTimeToken).toHaveBeenCalledOnce()
 
-    // Llamada exitosa al AuthEmailService para envío de link de activación
     expect(authEmailService.sendVerificationEmail).toHaveBeenCalledWith(
       expect.objectContaining({
         email: 'nuevo@usuario.com',
@@ -163,7 +160,6 @@ describe('RegisterUseCase', () => {
 
     const useCase = new RegisterUseCase(authUnitOfWork, authEmailService)
 
-    // El sistema debe detener el flujo y lanzar la excepción UserAlreadyExistsError.
     await expect(
       useCase.execute({
         email: 'ya_registrado@ejemplo.com',
@@ -172,7 +168,6 @@ describe('RegisterUseCase', () => {
       }),
     ).rejects.toThrowError(UserAlreadyExistsError)
 
-    // No debe realizarse ninguna llamada a la creación de credenciales ni envío de correos.
     expect(createUser).not.toHaveBeenCalled()
     expect(createCredential).not.toHaveBeenCalled()
     expect(createOneTimeToken).not.toHaveBeenCalled()
