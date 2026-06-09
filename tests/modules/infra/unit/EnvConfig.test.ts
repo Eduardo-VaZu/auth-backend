@@ -104,4 +104,22 @@ describe('env config', () => {
       expect.stringContaining('BREVO_SENDER_EMAIL is required'),
     )
   })
+
+  it('exits with error when required fields have invalid values', async () => {
+    process.env = {
+      ...buildBaseEnv(),
+      PORT: '-1',
+      ACCESS_TOKEN_SECRET: 'too-short',
+    }
+
+    const exitMock = vi.spyOn(process, 'exit').mockImplementation(((
+      code?: number,
+    ) => {
+      throw new Error(`process.exit:${code ?? 0}`)
+    }) as (code?: number) => never)
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
+
+    await expect(import('@/config/env.js')).rejects.toThrow('process.exit:1')
+    expect(exitMock).toHaveBeenCalledWith(1)
+  })
 })

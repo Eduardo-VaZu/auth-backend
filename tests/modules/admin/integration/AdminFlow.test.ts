@@ -182,4 +182,274 @@ describe('AdminFlow', () => {
       ]),
     )
   })
+
+  it('covers soft delete and assign role endpoints for admin', async () => {
+    const softDeleteUserUseCase = {
+      execute: vi.fn(() => Promise.resolve({ clearAuthCookies: true })),
+    }
+    const assignUserRoleUseCase = {
+      execute: vi.fn(() => Promise.resolve({ clearAuthCookies: false })),
+    }
+    const controller = {
+      listRoles: vi.fn(),
+      listUsers: vi.fn(),
+      getUserProfile: vi.fn(),
+      updateUserStatus: vi.fn(),
+      listUserRoles: vi.fn(),
+      revokeUserRole: vi.fn(),
+      softDeleteUser: vi.fn(async (request, response) => {
+        await softDeleteUserUseCase.execute({
+          actorUserId: request.user?.userId,
+          targetUserId: request.params.userId,
+          accessToken: null,
+          requestId: null,
+          userAgent: null,
+          ipAddress: null,
+        })
+        response.clearCookie(ACCESS_TOKEN_COOKIE_NAME)
+        response.clearCookie('refresh_token')
+        response.status(200).json({ message: 'User deleted successfully' })
+      }),
+      assignUserRole: vi.fn(async (request, response) => {
+        await assignUserRoleUseCase.execute({
+          actorUserId: request.user?.userId,
+          targetUserId: request.params.userId,
+          roleId: request.body.roleId,
+          accessToken: null,
+          requestId: null,
+          userAgent: null,
+          ipAddress: null,
+        })
+        response.status(200).json({ message: 'Role assigned successfully' })
+      }),
+    }
+
+    const app = express()
+    app.use(express.json())
+    app.use(cookieParser('test-secret'))
+    app.use(
+      '/admin',
+      createAdminRouter(
+        createContainer(
+          new Map([
+            [TYPES.AdminController, controller],
+            [TYPES.ITokenService, {}],
+            [TYPES.ISessionStore, {}],
+            [TYPES.IUserSessionRepository, {}],
+          ]),
+        ),
+      ),
+    )
+    app.use((error: unknown, _request, response, _next) => {
+      if (error instanceof AppError) {
+        response.status(error.statusCode).json({
+          error: { code: error.code, message: error.message },
+        })
+        return
+      }
+      response
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'unexpected' } })
+    })
+
+    const deleteResponse = await request(app)
+      .delete('/admin/users/33333333-3333-4333-8333-333333333333')
+      .set('x-role', 'admin')
+      .expect(200)
+
+    expect(softDeleteUserUseCase.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetUserId: '33333333-3333-4333-8333-333333333333',
+      }),
+    )
+    expect(deleteResponse.headers['set-cookie']).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining(`${ACCESS_TOKEN_COOKIE_NAME}=`),
+        expect.stringContaining('refresh_token='),
+      ]),
+    )
+
+    const assignResponse = await request(app)
+      .post('/admin/users/44444444-4444-4444-8444-444444444444/roles')
+      .set('x-role', 'admin')
+      .send({ roleId: '22222222-2222-4222-8222-222222222222' })
+      .expect(200)
+
+    expect(assignUserRoleUseCase.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        targetUserId: '44444444-4444-4444-8444-444444444444',
+        roleId: '22222222-2222-4222-8222-222222222222',
+      }),
+    )
+  })
+
+  it('returns 403 for non-admin on all mutation endpoints', async () => {
+    const controller = {
+      listRoles: vi.fn(),
+      listUsers: vi.fn(),
+      getUserProfile: vi.fn(),
+      updateUserStatus: vi.fn((_req, res) => res.status(200).json({})),
+      softDeleteUser: vi.fn((_req, res) => res.status(200).json({})),
+      listUserRoles: vi.fn(),
+      assignUserRole: vi.fn((_req, res) => res.status(200).json({})),
+      revokeUserRole: vi.fn((_req, res) => res.status(200).json({})),
+    }
+
+    const app = express()
+    app.use(express.json())
+    app.use(cookieParser('test-secret'))
+    app.use(
+      '/admin',
+      createAdminRouter(
+        createContainer(
+          new Map([
+            [TYPES.AdminController, controller],
+            [TYPES.ITokenService, {}],
+            [TYPES.ISessionStore, {}],
+            [TYPES.IUserSessionRepository, {}],
+          ]),
+        ),
+      ),
+    )
+    app.use((error: unknown, _request, response, _next) => {
+      if (error instanceof AppError) {
+        response.status(error.statusCode).json({
+          error: { code: error.code, message: error.message },
+        })
+        return
+      }
+      response
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'unexpected' } })
+    })
+
+    await request(app)
+      .patch('/admin/users/33333333-3333-4333-8333-333333333333/status')
+      .set('x-role', 'user')
+      .send({ status: 'disabled' })
+      .expect(403)
+
+    await request(app)
+      .delete('/admin/users/33333333-3333-4333-8333-333333333333')
+      .set('x-role', 'user')
+      .expect(403)
+
+    await request(app)
+      .post('/admin/users/44444444-4444-4444-8444-444444444444/roles')
+      .set('x-role', 'user')
+      .send({ roleId: '22222222-2222-4222-8222-222222222222' })
+      .expect(403)
+
+    await request(app)
+      .delete(
+        '/admin/users/44444444-4444-4444-8444-444444444444/roles/22222222-2222-4222-8222-222222222222',
+      )
+      .set('x-role', 'user')
+      .expect(403)
+  })
+
+  it('lists users and user roles for admin', async () => {
+    const listUsersUseCase = {
+      execute: vi.fn(() =>
+        Promise.resolve({
+          users: [
+            {
+              id: '11111111-1111-4111-8111-111111111111',
+              email: 'test@example.com',
+              role: 'user',
+              roles: ['user'],
+              status: 'active',
+            },
+          ],
+          pagination: { page: 1, limit: 10, total: 1, totalPages: 1 },
+        }),
+      ),
+    }
+    const listUserRolesUseCase = {
+      execute: vi.fn(() =>
+        Promise.resolve({
+          userId: '44444444-4444-4444-8444-444444444444',
+          roles: [
+            {
+              id: '22222222-2222-4222-8222-222222222222',
+              code: 'admin',
+              name: 'Administrator',
+            },
+          ],
+        }),
+      ),
+    }
+    const controller = {
+      listRoles: vi.fn(),
+      listUsers: vi.fn(async (request, response) => {
+        const page = request.query.page ? Number(request.query.page) : 1
+        const limit = request.query.limit ? Number(request.query.limit) : 20
+        const payload = await listUsersUseCase.execute({ page, limit })
+        response.status(200).json(payload)
+      }),
+      getUserProfile: vi.fn(),
+      updateUserStatus: vi.fn(),
+      softDeleteUser: vi.fn(),
+      listUserRoles: vi.fn(async (request, response) => {
+        const payload = await listUserRolesUseCase.execute(
+          request.params.userId,
+        )
+        response.status(200).json(payload)
+      }),
+      assignUserRole: vi.fn(),
+      revokeUserRole: vi.fn(),
+    }
+
+    const app = express()
+    app.use(express.json())
+    app.use(cookieParser('test-secret'))
+    app.use(
+      '/admin',
+      createAdminRouter(
+        createContainer(
+          new Map([
+            [TYPES.AdminController, controller],
+            [TYPES.ITokenService, {}],
+            [TYPES.ISessionStore, {}],
+            [TYPES.IUserSessionRepository, {}],
+          ]),
+        ),
+      ),
+    )
+    app.use((error: unknown, _request, response, _next) => {
+      if (error instanceof AppError) {
+        response.status(error.statusCode).json({
+          error: { code: error.code, message: error.message },
+        })
+        return
+      }
+      response
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'unexpected' } })
+    })
+
+    const usersResponse = await request(app)
+      .get('/admin/users?page=1&limit=10')
+      .set('x-role', 'admin')
+      .expect(200)
+
+    expect(usersResponse.body.pagination).toEqual({
+      page: 1,
+      limit: 10,
+      total: 1,
+      totalPages: 1,
+    })
+
+    const rolesResponse = await request(app)
+      .get('/admin/users/44444444-4444-4444-8444-444444444444/roles')
+      .set('x-role', 'admin')
+      .expect(200)
+
+    expect(rolesResponse.body.roles).toEqual([
+      expect.objectContaining({
+        id: '22222222-2222-4222-8222-222222222222',
+        code: 'admin',
+      }),
+    ])
+  })
 })

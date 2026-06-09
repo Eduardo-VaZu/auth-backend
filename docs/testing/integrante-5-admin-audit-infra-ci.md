@@ -112,15 +112,15 @@ npm run build
 
 ## Checklist de entrega
 
-- [ ] Unit AdminUseCases
-- [ ] Integration AdminFlow
-- [ ] Unit ListAuditLogsUseCase
-- [ ] Integration AuditFlow
-- [ ] Unit EnvConfig
-- [ ] Unit CleanupCron
-- [ ] Integration CleanupDataLifecycle
-- [ ] Validacion CI completa
-- [ ] Evidencia de comandos
+- [x] Unit AdminUseCases
+- [x] Integration AdminFlow
+- [x] Unit ListAuditLogsUseCase
+- [x] Integration AuditFlow
+- [x] Unit EnvConfig
+- [x] Unit CleanupCron
+- [x] Integration CleanupDataLifecycle
+- [x] Validacion CI completa
+- [x] Evidencia de comandos
 
 ## Criterio de Done
 

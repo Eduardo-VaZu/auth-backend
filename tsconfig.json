@@ -8,9 +8,8 @@
     "moduleDetection": "force",
     "rootDir": "./src",
     "outDir": "./dist",
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     "strict": true,
     "skipLibCheck": true,
