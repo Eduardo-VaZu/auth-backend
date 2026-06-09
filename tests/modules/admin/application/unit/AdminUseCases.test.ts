@@ -243,7 +243,9 @@ describe('Admin use cases', () => {
 
   it('assigns role without clearing auth cookies when actor token differs from target', async () => {
     const ctx = createAuthContext()
-    const targetUser = createUser({ id: '88888888-8888-4888-8888-888888888888' })
+    const targetUser = createUser({
+      id: '88888888-8888-4888-8888-888888888888',
+    })
     const targetRole = createRole()
     ctx.userRepository.findById.mockResolvedValue(targetUser)
     ctx.roleRepository.findById.mockResolvedValue(targetRole)

@@ -185,14 +185,10 @@ describe('AdminFlow', () => {
 
   it('covers soft delete and assign role endpoints for admin', async () => {
     const softDeleteUserUseCase = {
-      execute: vi.fn(() =>
-        Promise.resolve({ clearAuthCookies: true }),
-      ),
+      execute: vi.fn(() => Promise.resolve({ clearAuthCookies: true })),
     }
     const assignUserRoleUseCase = {
-      execute: vi.fn(() =>
-        Promise.resolve({ clearAuthCookies: false }),
-      ),
+      execute: vi.fn(() => Promise.resolve({ clearAuthCookies: false })),
     }
     const controller = {
       listRoles: vi.fn(),
@@ -251,7 +247,9 @@ describe('AdminFlow', () => {
         })
         return
       }
-      response.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'unexpected' } })
+      response
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'unexpected' } })
     })
 
     const deleteResponse = await request(app)
@@ -320,7 +318,9 @@ describe('AdminFlow', () => {
         })
         return
       }
-      response.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'unexpected' } })
+      response
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'unexpected' } })
     })
 
     await request(app)
@@ -341,7 +341,9 @@ describe('AdminFlow', () => {
       .expect(403)
 
     await request(app)
-      .delete('/admin/users/44444444-4444-4444-8444-444444444444/roles/22222222-2222-4222-8222-222222222222')
+      .delete(
+        '/admin/users/44444444-4444-4444-8444-444444444444/roles/22222222-2222-4222-8222-222222222222',
+      )
       .set('x-role', 'user')
       .expect(403)
   })
@@ -368,7 +370,11 @@ describe('AdminFlow', () => {
         Promise.resolve({
           userId: '44444444-4444-4444-8444-444444444444',
           roles: [
-            { id: '22222222-2222-4222-8222-222222222222', code: 'admin', name: 'Administrator' },
+            {
+              id: '22222222-2222-4222-8222-222222222222',
+              code: 'admin',
+              name: 'Administrator',
+            },
           ],
         }),
       ),
@@ -385,7 +391,9 @@ describe('AdminFlow', () => {
       updateUserStatus: vi.fn(),
       softDeleteUser: vi.fn(),
       listUserRoles: vi.fn(async (request, response) => {
-        const payload = await listUserRolesUseCase.execute(request.params.userId)
+        const payload = await listUserRolesUseCase.execute(
+          request.params.userId,
+        )
         response.status(200).json(payload)
       }),
       assignUserRole: vi.fn(),
@@ -415,7 +423,9 @@ describe('AdminFlow', () => {
         })
         return
       }
-      response.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'unexpected' } })
+      response
+        .status(500)
+        .json({ error: { code: 'INTERNAL_ERROR', message: 'unexpected' } })
     })
 
     const usersResponse = await request(app)
@@ -436,7 +446,10 @@ describe('AdminFlow', () => {
       .expect(200)
 
     expect(rolesResponse.body.roles).toEqual([
-      expect.objectContaining({ id: '22222222-2222-4222-8222-222222222222', code: 'admin' }),
+      expect.objectContaining({
+        id: '22222222-2222-4222-8222-222222222222',
+        code: 'admin',
+      }),
     ])
   })
 })

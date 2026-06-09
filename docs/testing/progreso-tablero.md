@@ -5,19 +5,19 @@ Estados permitidos: `Pendiente | En curso | Hecho`.
 
 ## Estado General
 
-| Integrante | Modulo            | Tipo        | Suite/Archivo                            | Estado    | Evidencia | Fecha | PR  |
-| ---------- | ----------------- | ----------- | ---------------------------------------- | --------- | --------- | ----- | --- |
-| 1          | identity          | Unit        | RegisterUseCase.test.ts                  | Pendiente | -         | -     | -   |
-| 1          | identity          | Integration | RegisterFlow.test.ts                     | Pendiente | -         | -     | -   |
-| 2          | access            | Unit        | LoginUseCase.test.ts                     | Pendiente | -         | -     | -   |
-| 2          | access            | Integration | LoginFlow.test.ts                        | Pendiente | -         | -     | -   |
-| 3          | access            | Unit        | SessionUseCases.test.ts                  | Pendiente | -         | -     | -   |
-| 3          | access            | Integration | SessionLifecycle.test.ts                 | Pendiente | -         | -     | -   |
-| 4          | credentials       | Unit        | CredentialsUseCases.test.ts              | Pendiente | -         | -     | -   |
-| 4          | credentials       | Integration | CredentialsFlow.test.ts                  | Pendiente | -         | -     | -   |
-| 5          | admin/audit/infra | Unit        | AdminUseCases.test.ts                    | Hecho    | `npm run test:unit` (18 tests, 28ms) | 2026-06-08 | -   |
-| 5          | admin/audit/infra | Integration | AdminFlow/AuditFlow/CleanupDataLifecycle | Hecho    | `npm run test:integration` (7 tests, 186ms) | 2026-06-08 | -   |
-| 5          | ci                | CI          | node.js.yml + scripts ci                 | Hecho    | `type:check` + `lint` + `test:ci` + `build` | 2026-06-08 | -   |
+| Integrante | Modulo            | Tipo        | Suite/Archivo                            | Estado    | Evidencia                                   | Fecha      | PR  |
+| ---------- | ----------------- | ----------- | ---------------------------------------- | --------- | ------------------------------------------- | ---------- | --- |
+| 1          | identity          | Unit        | RegisterUseCase.test.ts                  | Pendiente | -                                           | -          | -   |
+| 1          | identity          | Integration | RegisterFlow.test.ts                     | Pendiente | -                                           | -          | -   |
+| 2          | access            | Unit        | LoginUseCase.test.ts                     | Pendiente | -                                           | -          | -   |
+| 2          | access            | Integration | LoginFlow.test.ts                        | Pendiente | -                                           | -          | -   |
+| 3          | access            | Unit        | SessionUseCases.test.ts                  | Pendiente | -                                           | -          | -   |
+| 3          | access            | Integration | SessionLifecycle.test.ts                 | Pendiente | -                                           | -          | -   |
+| 4          | credentials       | Unit        | CredentialsUseCases.test.ts              | Pendiente | -                                           | -          | -   |
+| 4          | credentials       | Integration | CredentialsFlow.test.ts                  | Pendiente | -                                           | -          | -   |
+| 5          | admin/audit/infra | Unit        | AdminUseCases.test.ts                    | Hecho     | `npm run test:unit` (18 tests, 28ms)        | 2026-06-08 | -   |
+| 5          | admin/audit/infra | Integration | AdminFlow/AuditFlow/CleanupDataLifecycle | Hecho     | `npm run test:integration` (7 tests, 186ms) | 2026-06-08 | -   |
+| 5          | ci                | CI          | node.js.yml + scripts ci                 | Hecho     | `type:check` + `lint` + `test:ci` + `build` | 2026-06-08 | -   |
 
 ## Definition Of Done (DoD)
 

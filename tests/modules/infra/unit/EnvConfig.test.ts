@@ -112,7 +112,9 @@ describe('env config', () => {
       ACCESS_TOKEN_SECRET: 'too-short',
     }
 
-    const exitMock = vi.spyOn(process, 'exit').mockImplementation(((code?: number) => {
+    const exitMock = vi.spyOn(process, 'exit').mockImplementation(((
+      code?: number,
+    ) => {
       throw new Error(`process.exit:${code ?? 0}`)
     }) as (code?: number) => never)
     vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
