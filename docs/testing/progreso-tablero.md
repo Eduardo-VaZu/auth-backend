@@ -15,9 +15,9 @@ Estados permitidos: `Pendiente | En curso | Hecho`.
 | 3          | access            | Integration | SessionLifecycle.test.ts                 | Pendiente | -         | -     | -   |
 | 4          | credentials       | Unit        | CredentialsUseCases.test.ts              | Pendiente | -         | -     | -   |
 | 4          | credentials       | Integration | CredentialsFlow.test.ts                  | Pendiente | -         | -     | -   |
-| 5          | admin/audit/infra | Unit        | AdminUseCases.test.ts                    | Pendiente | -         | -     | -   |
-| 5          | admin/audit/infra | Integration | AdminFlow/AuditFlow/CleanupDataLifecycle | Pendiente | -         | -     | -   |
-| 5          | ci                | CI          | node.js.yml + scripts ci                 | Pendiente | -         | -     | -   |
+| 5          | admin/audit/infra | Unit        | AdminUseCases.test.ts                    | Hecho    | `npm run test:unit` (18 tests, 28ms) | 2026-06-08 | -   |
+| 5          | admin/audit/infra | Integration | AdminFlow/AuditFlow/CleanupDataLifecycle | Hecho    | `npm run test:integration` (7 tests, 186ms) | 2026-06-08 | -   |
+| 5          | ci                | CI          | node.js.yml + scripts ci                 | Hecho    | `type:check` + `lint` + `test:ci` + `build` | 2026-06-08 | -   |
 
 ## Definition Of Done (DoD)
 

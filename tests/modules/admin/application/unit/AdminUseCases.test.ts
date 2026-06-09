@@ -194,6 +194,81 @@ describe('Admin use cases', () => {
     ).rejects.toThrow(ConflictError)
   })
 
+  it('throws NotFoundError when target user does not exist for assign', async () => {
+    const ctx = createAuthContext()
+    ctx.userRepository.findById.mockResolvedValue(null)
+
+    const useCase = new AssignUserRoleUseCase(
+      ctx.tokenService as never,
+      ctx.sessionStore as never,
+      ctx.authUnitOfWork,
+    )
+
+    await expect(
+      useCase.execute({
+        actorUserId: '55555555-5555-4555-8555-555555555555',
+        targetUserId: '99999999-9999-4999-8999-999999999999',
+        roleId: '22222222-2222-4222-8222-222222222222',
+        accessToken: null,
+        requestId: null,
+        userAgent: null,
+        ipAddress: null,
+      }),
+    ).rejects.toThrow(NotFoundError)
+  })
+
+  it('throws NotFoundError when role does not exist for assign', async () => {
+    const ctx = createAuthContext()
+    ctx.userRepository.findById.mockResolvedValue(createUser())
+    ctx.roleRepository.findById.mockResolvedValue(null)
+
+    const useCase = new AssignUserRoleUseCase(
+      ctx.tokenService as never,
+      ctx.sessionStore as never,
+      ctx.authUnitOfWork,
+    )
+
+    await expect(
+      useCase.execute({
+        actorUserId: '55555555-5555-4555-8555-555555555555',
+        targetUserId: '11111111-1111-4111-8111-111111111111',
+        roleId: '99999999-9999-4999-8999-999999999999',
+        accessToken: null,
+        requestId: null,
+        userAgent: null,
+        ipAddress: null,
+      }),
+    ).rejects.toThrow(NotFoundError)
+  })
+
+  it('assigns role without clearing auth cookies when actor token differs from target', async () => {
+    const ctx = createAuthContext()
+    const targetUser = createUser({ id: '88888888-8888-4888-8888-888888888888' })
+    const targetRole = createRole()
+    ctx.userRepository.findById.mockResolvedValue(targetUser)
+    ctx.roleRepository.findById.mockResolvedValue(targetRole)
+    ctx.userRoleRepository.assignActiveRole.mockResolvedValue(true)
+
+    const useCase = new AssignUserRoleUseCase(
+      ctx.tokenService as never,
+      ctx.sessionStore as never,
+      ctx.authUnitOfWork,
+    )
+
+    const result = await useCase.execute({
+      actorUserId: '55555555-5555-4555-8555-555555555555',
+      targetUserId: targetUser.id,
+      roleId: targetRole.id,
+      accessToken: 'access-token',
+      requestId: null,
+      userAgent: null,
+      ipAddress: null,
+    })
+
+    expect(result).toEqual({ clearAuthCookies: false })
+    expect(ctx.sessionStore.blacklistAccessToken).not.toHaveBeenCalled()
+  })
+
   it('revokes role and blocks removing last active role', async () => {
     const ctx = createAuthContext()
     const user = createUser()
@@ -245,6 +320,63 @@ describe('Admin use cases', () => {
         ipAddress: null,
       }),
     ).rejects.toThrow(ConflictError)
+  })
+
+  it('throws NotFoundError when target user does not exist for revoke', async () => {
+    const ctx = createAuthContext()
+    ctx.userRepository.findById.mockResolvedValue(null)
+
+    const useCase = new RevokeUserRoleUseCase(
+      ctx.tokenService as never,
+      ctx.sessionStore as never,
+      ctx.authUnitOfWork,
+    )
+
+    await expect(
+      useCase.execute({
+        actorUserId: '55555555-5555-4555-8555-555555555555',
+        targetUserId: '99999999-9999-4999-8999-999999999999',
+        roleId: '22222222-2222-4222-8222-222222222222',
+        accessToken: null,
+        requestId: null,
+        userAgent: null,
+        ipAddress: null,
+      }),
+    ).rejects.toThrow(NotFoundError)
+  })
+
+  it('throws NotFoundError when role is not actively assigned in revoke', async () => {
+    const ctx = createAuthContext()
+    const user = createUser()
+    const role = createRole()
+    ctx.userRepository.findById.mockResolvedValue(user)
+    ctx.roleRepository.findById.mockResolvedValue(role)
+    ctx.userRoleRepository.listActiveByUserId.mockResolvedValue([
+      createRole({
+        id: '77777777-7777-4777-8777-777777777777',
+        code: 'user',
+        name: 'User',
+        description: 'Standard access',
+      }),
+    ])
+
+    const useCase = new RevokeUserRoleUseCase(
+      ctx.tokenService as never,
+      ctx.sessionStore as never,
+      ctx.authUnitOfWork,
+    )
+
+    await expect(
+      useCase.execute({
+        actorUserId: '55555555-5555-4555-8555-555555555555',
+        targetUserId: user.id,
+        roleId: role.id,
+        accessToken: null,
+        requestId: null,
+        userAgent: null,
+        ipAddress: null,
+      }),
+    ).rejects.toThrow(NotFoundError)
   })
 
   it('updates status and revokes auth artifacts only when status changes', async () => {
@@ -313,6 +445,90 @@ describe('Admin use cases', () => {
     expect(ctx.sessionStore.deleteAllRefreshTokens).not.toHaveBeenCalled()
   })
 
+  it('throws ConflictError when updating status of a soft-deleted user', async () => {
+    const ctx = createAuthContext()
+    const deletedUser = createUser({
+      id: '88888888-8888-4888-8888-888888888888',
+      deletedAt: new Date('2026-05-01T00:00:00.000Z'),
+    })
+    ctx.userRepository.findById.mockResolvedValue(deletedUser)
+
+    const useCase = new UpdateUserStatusUseCase(
+      ctx.tokenService as never,
+      ctx.sessionStore as never,
+      ctx.authUnitOfWork,
+    )
+
+    await expect(
+      useCase.execute({
+        actorUserId: '55555555-5555-4555-8555-555555555555',
+        targetUserId: deletedUser.id,
+        status: 'disabled',
+        accessToken: null,
+        requestId: null,
+        userAgent: null,
+        ipAddress: null,
+      }),
+    ).rejects.toThrow(ConflictError)
+  })
+
+  it('throws NotFoundError when user does not exist for update status', async () => {
+    const ctx = createAuthContext()
+    ctx.userRepository.findById.mockResolvedValue(null)
+
+    const useCase = new UpdateUserStatusUseCase(
+      ctx.tokenService as never,
+      ctx.sessionStore as never,
+      ctx.authUnitOfWork,
+    )
+
+    await expect(
+      useCase.execute({
+        actorUserId: '55555555-5555-4555-8555-555555555555',
+        targetUserId: '99999999-9999-4999-8999-999999999999',
+        status: 'active',
+        accessToken: null,
+        requestId: null,
+        userAgent: null,
+        ipAddress: null,
+      }),
+    ).rejects.toThrow(NotFoundError)
+  })
+
+  it('sets clearAuthCookies true and blacklists token when target is actor and status changes', async () => {
+    const ctx = createAuthContext()
+    const targetUser = createUser({
+      id: '11111111-1111-4111-8111-111111111111',
+      status: 'active',
+    })
+    ctx.userRepository.findById.mockResolvedValue(targetUser)
+
+    const useCase = new UpdateUserStatusUseCase(
+      ctx.tokenService as never,
+      ctx.sessionStore as never,
+      ctx.authUnitOfWork,
+    )
+
+    const result = await useCase.execute({
+      actorUserId: '55555555-5555-4555-8555-555555555555',
+      targetUserId: targetUser.id,
+      status: 'locked',
+      accessToken: 'access-token',
+      requestId: null,
+      userAgent: null,
+      ipAddress: null,
+    })
+
+    expect(result).toEqual({ clearAuthCookies: true })
+    expect(ctx.sessionStore.blacklistAccessToken).toHaveBeenCalledWith(
+      '33333333-3333-4333-8333-333333333333',
+      expect.any(Number),
+    )
+    expect(ctx.sessionStore.deleteAllRefreshTokens).toHaveBeenCalledWith(
+      targetUser.id,
+    )
+  })
+
   it('soft deletes user once and keeps idempotent behavior for already deleted users', async () => {
     const ctx = createAuthContext()
     ctx.userRepository.findById.mockResolvedValue(createUser())
@@ -375,6 +591,28 @@ describe('Admin use cases', () => {
     )
   })
 
+  it('throws NotFoundError when user does not exist for soft delete', async () => {
+    const ctx = createAuthContext()
+    ctx.userRepository.findById.mockResolvedValue(null)
+
+    const useCase = new SoftDeleteUserUseCase(
+      ctx.tokenService as never,
+      ctx.sessionStore as never,
+      ctx.authUnitOfWork,
+    )
+
+    await expect(
+      useCase.execute({
+        actorUserId: '55555555-5555-4555-8555-555555555555',
+        targetUserId: '99999999-9999-4999-8999-999999999999',
+        accessToken: null,
+        requestId: null,
+        userAgent: null,
+        ipAddress: null,
+      }),
+    ).rejects.toThrow(NotFoundError)
+  })
+
   it('maps list and profile responses with pagination and DTO transformations', async () => {
     const user = createUser({
       roles: ['admin', 'user'],
@@ -429,6 +667,60 @@ describe('Admin use cases', () => {
       user: expect.objectContaining({
         id: user.id,
       }),
+    })
+  })
+
+  it('returns totalPages 1 when listing zero users', async () => {
+    const listUsersUseCase = new ListUsersUseCase({
+      listPaginated: vi.fn(() =>
+        Promise.resolve({
+          users: [],
+          total: 0,
+        }),
+      ),
+    } as never)
+
+    const result = await listUsersUseCase.execute({
+      page: 1,
+      limit: 10,
+    })
+
+    expect(result.users).toEqual([])
+    expect(result.pagination).toEqual({
+      page: 1,
+      limit: 10,
+      total: 0,
+      totalPages: 1,
+    })
+  })
+
+  it('lists active roles for an existing user', async () => {
+    const user = createUser()
+    const role1 = createRole()
+    const role2 = createRole({
+      id: '77777777-7777-4777-8777-777777777777',
+      code: 'user',
+      name: 'User',
+      description: 'Standard access',
+    })
+
+    const listUserRolesUseCase = new ListUserRolesUseCase(
+      {
+        findById: vi.fn(() => Promise.resolve(user)),
+      } as never,
+      {
+        listActiveByUserId: vi.fn(() => Promise.resolve([role1, role2])),
+      } as never,
+    )
+
+    const result = await listUserRolesUseCase.execute(user.id)
+
+    expect(result).toEqual({
+      userId: user.id,
+      roles: [
+        expect.objectContaining({ id: role1.id, code: role1.code }),
+        expect.objectContaining({ id: role2.id, code: role2.code }),
+      ],
     })
   })
 

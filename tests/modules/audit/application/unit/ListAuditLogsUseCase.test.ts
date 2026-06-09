@@ -85,4 +85,57 @@ describe('ListAuditLogsUseCase', () => {
       },
     })
   })
+
+  it('returns empty logs with totalPages 1 when no events match', async () => {
+    const listEvents = vi.fn(() =>
+      Promise.resolve({
+        events: [],
+        total: 0,
+      }),
+    )
+    const useCase = new ListAuditLogsUseCase({
+      listEvents,
+      recordEvent: vi.fn(),
+    })
+
+    const result = await useCase.execute({
+      page: 1,
+      limit: 10,
+    })
+
+    expect(listEvents).toHaveBeenCalledWith({
+      limit: 10,
+      offset: 0,
+    })
+    expect(result.logs).toEqual([])
+    expect(result.pagination).toEqual({
+      page: 1,
+      limit: 10,
+      total: 0,
+      totalPages: 1,
+    })
+  })
+
+  it('omits undefined optional filters from service call', async () => {
+    const listEvents = vi.fn(() =>
+      Promise.resolve({
+        events: [],
+        total: 0,
+      }),
+    )
+    const useCase = new ListAuditLogsUseCase({
+      listEvents,
+      recordEvent: vi.fn(),
+    })
+
+    await useCase.execute({
+      page: 1,
+      limit: 20,
+    })
+
+    expect(listEvents).toHaveBeenCalledWith({
+      limit: 20,
+      offset: 0,
+    })
+  })
 })
