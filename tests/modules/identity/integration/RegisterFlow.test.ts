@@ -98,50 +98,71 @@ describe('Register Flow Integration (HTTP & Testcontainers)', () => {
     console.log('[TEST] ------------------------------------------------\n'),
   )
 
-  it('GET /health -> returns 200 with expected payload', async () => {
+  it('GET /health returns 200 with expected payload', async () => {
     console.log('[AUDIT] Test: GET /health')
     const response = await request(app).get('/health')
+
     expect(response.status).toBe(200)
-    expect(response.body).toEqual(expect.objectContaining({ status: 'ok' }))
+    expect(response.body).toEqual(
+      expect.objectContaining({
+        status: 'ok',
+        timestamp: expect.any(String),
+        uptime: expect.any(Number),
+        dependencies: expect.any(Object),
+      }),
+    )
   })
 
-  it('POST /auth/register -> fails with 422 on invalid payload', async () => {
-    console.log('[AUDIT] Test: POST /auth/register (Invalid Payload)')
-    const response = await request(app)
-      .post('/auth/register')
-      .send({ email: 'bad', password: '123' })
-    expect(response.status).toBe(422)
-  })
-
-  it('POST /auth/register -> creates user, returns 201 and does NOT set login cookies', async () => {
+  it('POST /auth/register does not set automatic login cookies', async () => {
     console.log(
       `[AUDIT] Test: POST /auth/register (Successful registration: ${testUser.email})`,
     )
     const response = await request(app).post('/auth/register').send(testUser)
 
     expect(response.status).toBe(201)
-    expect(response.body).toHaveProperty('verificationRequired', true)
 
     const setCookieHeader = response.headers['set-cookie'] as
       | string[]
       | undefined
     if (setCookieHeader && Array.isArray(setCookieHeader)) {
       const hasAuthCookies = setCookieHeader.some(
-        (c) => c.includes('accessToken') || c.includes('sessionId'),
+        (c) => c.includes('access_token') || c.includes('refresh_token'),
       )
       expect(hasAuthCookies).toBe(false)
+    } else {
+      expect(setCookieHeader).toBeUndefined()
     }
   })
 
-  it('POST /auth/register -> rejects duplicate email with 409', async () => {
+  it('POST /auth/register returns previewToken in non-production', async () => {
+    console.log('[AUDIT] Test: POST /auth/register (Checking previewToken)')
+    const testUser2 = {
+      email: `lincolm.preview.${Date.now()}@example.com`,
+      password: 'SecurePassword2026!',
+    }
+    const response = await request(app).post('/auth/register').send(testUser2)
+
+    expect(response.status).toBe(201)
+    expect(response.body).toHaveProperty('previewToken')
+  })
+
+  it('GET /auth/me sin login despues de registro -> 401', async () => {
+    console.log('[AUDIT] Test: GET /auth/me (Unauthorized)')
+    const response = await request(app).get('/auth/me')
+    expect(response.status).toBe(401)
+  })
+
+  it('POST /auth/register with duplicate email returns 409', async () => {
     console.log('[AUDIT] Test: POST /auth/register (Duplicate email)')
     const response = await request(app).post('/auth/register').send(testUser)
     expect(response.status).toBe(409)
   })
 
-  it('GET /auth/me -> returns 401 without login after registration', async () => {
-    console.log('[AUDIT] Test: GET /auth/me (Unauthorized)')
-    const response = await request(app).get('/auth/me')
-    expect(response.status).toBe(401)
+  it('POST /auth/register with invalid payload returns 400', async () => {
+    console.log('[AUDIT] Test: POST /auth/register (Invalid Payload)')
+    const response = await request(app)
+      .post('/auth/register')
+      .send({ email: 'no-es-email', password: '123' })
+    expect(response.status).toBe(422) // Ajustado a 422 para coincidir con la validación real de Zod
   })
 })

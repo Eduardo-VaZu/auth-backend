@@ -114,7 +114,7 @@ describe('RegisterUseCase', () => {
     })
   })
 
-  it('Caso CP-02: Registro con Email Duplicado', async () => {
+  it('rejects registration with duplicate email', async () => {
     const findByEmail = vi.fn(() =>
       Promise.resolve(
         new User({
