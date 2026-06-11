@@ -109,12 +109,12 @@ npm run test:integration
 
 ## Checklist de entrega
 
-- [ ] Unit domain credentials
-- [ ] Unit ParseOneTimeToken
-- [ ] Unit CredentialsUseCases
-- [ ] Unit AuthEmailService
-- [ ] Integration CredentialsFlow
-- [ ] Evidencia de comandos
+- [x] Unit domain credentials
+- [x] Unit ParseOneTimeToken
+- [x] Unit CredentialsUseCases
+- [x] Unit AuthEmailService
+- [x] Integration CredentialsFlow
+- [x] Evidencia de comandos
 
 ## Criterio de Done
 
