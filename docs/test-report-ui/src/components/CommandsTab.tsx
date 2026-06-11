@@ -28,16 +28,23 @@ export function CommandsTab({ data }: CommandsTabProps) {
       <section className="one-col">
         <article className="card section">
           <h2>Comandos Globales</h2>
-          <p className="lead">Bloque separado para revisar pipeline, salida completa y estados agregados.</p>
+          <p className="lead">
+            Bloque separado para revisar pipeline, salida completa y estados
+            agregados.
+          </p>
           <div className="commands-grid">
             {data.commands.length > 0 ? (
               data.commands.map((command) => (
                 <div key={command.id} className="callout">
                   <strong className="mono">{command.label}</strong>
                   <div style={{ marginTop: 8 }}>
-                    <span className={statusClass(command.status)}>{statusLabel(command.status)}</span>
+                    <span className={statusClass(command.status)}>
+                      {statusLabel(command.status)}
+                    </span>
                   </div>
-                  <div style={{ marginTop: 10 }} className="summary-main">{command.summary}</div>
+                  <div style={{ marginTop: 10 }} className="summary-main">
+                    {command.summary}
+                  </div>
                   {command.details.length > 0 && (
                     <ul className="details">
                       {command.details.map((detail, idx) => (
@@ -45,7 +52,9 @@ export function CommandsTab({ data }: CommandsTabProps) {
                       ))}
                     </ul>
                   )}
-                  <div className="summary-meta">Actualizado: {formatDate(command.lastUpdatedAt)}</div>
+                  <div className="summary-meta">
+                    Actualizado: {formatDate(command.lastUpdatedAt)}
+                  </div>
                 </div>
               ))
             ) : (

@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --bg: #f6f4ef;
@@ -20,7 +20,7 @@
   --shadow: 0 18px 50px rgba(31, 41, 55, 0.08);
 }
 
-[data-theme="dark"] {
+[data-theme='dark'] {
   --bg: #0f1117;
   --surface: #1a1d27;
   --surface-strong: #202430;
@@ -42,14 +42,18 @@
 
 body {
   margin: 0;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background:
-    radial-gradient(circle at top right, rgba(15, 118, 110, 0.13), transparent 32%),
+    radial-gradient(
+      circle at top right,
+      rgba(15, 118, 110, 0.13),
+      transparent 32%
+    ),
     linear-gradient(180deg, #f7f2e8 0%, var(--bg) 100%);
   background-attachment: fixed;
   color: var(--ink);
 }
 
-[data-theme="dark"] body {
+[data-theme='dark'] body {
   background: #0f1923;
 }

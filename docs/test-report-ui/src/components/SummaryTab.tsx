@@ -1,8 +1,23 @@
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js'
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+} from 'chart.js'
 import { Doughnut, Bar } from 'react-chartjs-2'
 import type { TestReportData } from '../types'
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement)
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+)
 
 interface SummaryTabProps {
   data: TestReportData
@@ -27,7 +42,9 @@ export function SummaryTab({ data }: SummaryTabProps) {
     ],
   }
 
-  const coverageRow = data.coverage?.rows?.find((row) => row.file === 'All files')
+  const coverageRow = data.coverage?.rows?.find(
+    (row) => row.file === 'All files',
+  )
   const parseMetric = (value: string | undefined) => {
     const numeric = Number.parseFloat(String(value ?? '0').replace(',', '.'))
     return Number.isFinite(numeric) ? numeric : 0
@@ -105,11 +122,15 @@ export function SummaryTab({ data }: SummaryTabProps) {
       <section className="two-col">
         <article className="card section">
           <h2>Estado General</h2>
-          <p className="lead">Resumen rapido de la corrida actual y del tablero dinamico.</p>
+          <p className="lead">
+            Resumen rapido de la corrida actual y del tablero dinamico.
+          </p>
           <div className="stack">
             <div className="callout">
               <strong>Estado de ejecucion</strong>
-              <div>{data.runState === 'completed' ? 'Completada' : data.runState}</div>
+              <div>
+                {data.runState === 'completed' ? 'Completada' : data.runState}
+              </div>
             </div>
             <div className="callout">
               <strong>Ultima actualizacion</strong>
@@ -135,7 +156,9 @@ export function SummaryTab({ data }: SummaryTabProps) {
             </div>
             <div className="callout">
               <strong>3. Agregar nuevas suites</strong>
-              Cualquier archivo nuevo <span className="mono">tests/**/*.test.ts</span> aparecera automaticamente en la siguiente corrida.
+              Cualquier archivo nuevo{' '}
+              <span className="mono">tests/**/*.test.ts</span> aparecera
+              automaticamente en la siguiente corrida.
             </div>
           </div>
         </article>
@@ -144,7 +167,10 @@ export function SummaryTab({ data }: SummaryTabProps) {
       <section className="chart-grid">
         <article className="card chart-panel">
           <h3>Estado de Suites</h3>
-          <p>Distribucion visual de suites aprobadas, fallidas, pendientes y en ejecucion.</p>
+          <p>
+            Distribucion visual de suites aprobadas, fallidas, pendientes y en
+            ejecucion.
+          </p>
           <div className="chart-canvas-wrap">
             <Doughnut data={suiteData} options={doughnutOptions} />
           </div>
@@ -152,7 +178,10 @@ export function SummaryTab({ data }: SummaryTabProps) {
 
         <article className="card chart-panel">
           <h3>Cobertura Global</h3>
-          <p>Comparacion de cobertura total para statements, branches, functions y lines.</p>
+          <p>
+            Comparacion de cobertura total para statements, branches, functions
+            y lines.
+          </p>
           <div className="chart-canvas-wrap">
             <Bar data={coverageData} options={barOptions} />
           </div>

@@ -23,10 +23,8 @@ const COVERAGE_GLOSSARY = {
     'Porcentaje de instrucciones del codigo ejecutadas por las pruebas.',
   branches:
     'Porcentaje de caminos condicionales cubiertos, por ejemplo if/else o ternarios.',
-  functions:
-    'Porcentaje de funciones o metodos ejecutados al menos una vez.',
-  lines:
-    'Porcentaje de lineas ejecutadas durante la corrida.',
+  functions: 'Porcentaje de funciones o metodos ejecutados al menos una vez.',
+  lines: 'Porcentaje de lineas ejecutadas durante la corrida.',
   uncovered:
     'Lineas o rangos que no fueron cubiertos por las pruebas segun el reporte.',
 }
@@ -74,10 +72,7 @@ const walkSourceFiles = async (dir) => {
 }
 
 const escapeHtml = (value) =>
-  value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
+  value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 
 const inferProjectType = (relativePath) =>
   relativePath.includes('/integration/') ? 'integration' : 'unit'
@@ -134,12 +129,13 @@ const normalizeOutput = (value) => {
 const parseCoverageData = (stdout, stderr) => {
   const text = `${stdout || ''}\n${stderr || ''}`
   const lines = text.split(/\r?\n/)
-  const tableHeaderIndex = lines.findIndex((line) =>
-    line.includes('File') &&
-    line.includes('% Stmts') &&
-    line.includes('% Branch') &&
-    line.includes('% Funcs') &&
-    line.includes('% Lines'),
+  const tableHeaderIndex = lines.findIndex(
+    (line) =>
+      line.includes('File') &&
+      line.includes('% Stmts') &&
+      line.includes('% Branch') &&
+      line.includes('% Funcs') &&
+      line.includes('% Lines'),
   )
 
   const rows = []
@@ -149,7 +145,9 @@ const parseCoverageData = (stdout, stderr) => {
       if (
         !line ||
         line.startsWith('=============================== Coverage summary') ||
-        line.startsWith('================================================================================')
+        line.startsWith(
+          '================================================================================',
+        )
       ) {
         break
       }
@@ -187,7 +185,9 @@ const parseCoverageData = (stdout, stderr) => {
         return cleaned.startsWith(metric)
       })
       if (summaryLine) {
-        summary[metric.toLowerCase()] = summaryLine.replace(/\x1b\[[0-9;]*m/g, '').trim()
+        summary[metric.toLowerCase()] = summaryLine
+          .replace(/\x1b\[[0-9;]*m/g, '')
+          .trim()
       }
     }
   }
@@ -256,7 +256,8 @@ const parseLcovUncoveredMap = async () => {
 
 const resolveCoveragePath = (label, sourceEntries) => {
   const cleanLabel = (label || '').trim()
-  if (!cleanLabel || cleanLabel === 'All files') return 'Cobertura global del proyecto'
+  if (!cleanLabel || cleanLabel === 'All files')
+    return 'Cobertura global del proyecto'
 
   if (cleanLabel.startsWith('src')) {
     const direct = sourceEntries.find(
@@ -360,7 +361,11 @@ const createInitialReport = (tests) => ({
     running: 0,
   },
   commands: [
-    createCommandRecord('typecheck', 'npm run type:check', 'npm run type:check'),
+    createCommandRecord(
+      'typecheck',
+      'npm run type:check',
+      'npm run type:check',
+    ),
     createCommandRecord('test-unit', 'npm run test:unit', 'npm run test:unit'),
     createCommandRecord(
       'test-integration',
@@ -418,7 +423,9 @@ const refreshSummary = (report) => {
 
 const refreshHighlights = (report) => {
   const failingTests = report.tests.filter((test) => test.status === 'failed')
-  const failingCommands = report.commands.filter((command) => command.status === 'failed')
+  const failingCommands = report.commands.filter(
+    (command) => command.status === 'failed',
+  )
   const passingTests = report.tests.filter((test) => test.status === 'passed')
 
   report.highlights = [
@@ -439,8 +446,7 @@ const refreshHighlights = (report) => {
     {
       title: 'Nuevas pruebas',
       tone: 'info',
-      body:
-        'El reporte detecta archivos *.test.ts del directorio tests. Si agregas nuevas suites, apareceran en la siguiente corrida.',
+      body: 'El reporte detecta archivos *.test.ts del directorio tests. Si agregas nuevas suites, apareceran en la siguiente corrida.',
     },
   ]
 }
@@ -458,7 +464,9 @@ const refreshAggregateCommands = (report) => {
   const integrationTests = report.tests.filter(
     (test) => test.type === 'integration',
   )
-  const typecheckCommand = report.commands.find((item) => item.id === 'typecheck')
+  const typecheckCommand = report.commands.find(
+    (item) => item.id === 'typecheck',
+  )
   const coverageCommand = report.commands.find((item) => item.id === 'coverage')
 
   const unitFailed = unitTests.filter((test) => test.status === 'failed')
@@ -659,16 +667,14 @@ const main = async () => {
     refreshHighlights(report)
     await writeReport(report)
 
-    const vitestArgs = [
-      'vitest',
-      'run',
-      test.file,
-      '--project',
-      test.type,
-    ]
+    const vitestArgs = ['vitest', 'run', test.file, '--project', test.type]
     test.command = `npx vitest run ${test.file} --project ${test.type}`
     const result = await runCommand('npx.cmd', vitestArgs)
-    const summary = extractSummary(result.stdout, result.stderr, badgeStatusByExitCode(result.code))
+    const summary = extractSummary(
+      result.stdout,
+      result.stderr,
+      badgeStatusByExitCode(result.code),
+    )
 
     test.status = badgeStatusByExitCode(result.code)
     test.summary = summary.short
@@ -734,7 +740,9 @@ main().catch(async (error) => {
       {
         title: 'Error al generar reporte',
         tone: 'warn',
-        body: escapeHtml(error instanceof Error ? error.message : String(error)),
+        body: escapeHtml(
+          error instanceof Error ? error.message : String(error),
+        ),
       },
     ],
   }

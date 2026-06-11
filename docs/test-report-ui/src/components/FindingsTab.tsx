@@ -38,7 +38,8 @@ export function FindingsTab({ data }: FindingsTabProps) {
           <div className="stack">
             <div className="callout">
               <strong>Proposito</strong>
-              Tablero dinamico para visualizar suites, comandos, coverage y errores de forma separada.
+              Tablero dinamico para visualizar suites, comandos, coverage y
+              errores de forma separada.
             </div>
             <div className="callout">
               <strong>Fuente de datos</strong>

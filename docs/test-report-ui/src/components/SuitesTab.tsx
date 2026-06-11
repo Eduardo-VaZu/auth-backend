@@ -38,7 +38,10 @@ export function SuitesTab({ data }: SuitesTabProps) {
           <div className="toolbar">
             <div>
               <h2>Suites Detectadas</h2>
-              <small>Vista dinamica por archivo de prueba, con columnas separadas para lectura mas clara.</small>
+              <small>
+                Vista dinamica por archivo de prueba, con columnas separadas
+                para lectura mas clara.
+              </small>
             </div>
             <div className="filters">
               {['all', 'passed', 'failed', 'running', 'pending'].map((f) => (
@@ -47,7 +50,15 @@ export function SuitesTab({ data }: SuitesTabProps) {
                   className={`filter-chip ${filter === f ? 'active' : ''}`}
                   onClick={() => setFilter(f)}
                 >
-                  {f === 'all' ? 'Todas' : f === 'passed' ? 'Aprobadas' : f === 'failed' ? 'Fallidas' : f === 'running' ? 'En ejecucion' : 'Pendientes'}
+                  {f === 'all'
+                    ? 'Todas'
+                    : f === 'passed'
+                      ? 'Aprobadas'
+                      : f === 'failed'
+                        ? 'Fallidas'
+                        : f === 'running'
+                          ? 'En ejecucion'
+                          : 'Pendientes'}
                 </button>
               ))}
             </div>
@@ -82,7 +93,9 @@ export function SuitesTab({ data }: SuitesTabProps) {
                     </td>
                     <td data-label="Detalles y ejecucion">
                       <div className="summary-meta">
-                        {test.type === 'integration' ? 'Suite de integracion HTTP o de flujo' : 'Suite unitaria o de logica aislada'}
+                        {test.type === 'integration'
+                          ? 'Suite de integracion HTTP o de flujo'
+                          : 'Suite unitaria o de logica aislada'}
                       </div>
                       {test.details.length > 0 && (
                         <ul className="details">
@@ -92,16 +105,22 @@ export function SuitesTab({ data }: SuitesTabProps) {
                         </ul>
                       )}
                     </td>
-                    <td data-label="Actualizado">{formatDate(test.lastUpdatedAt)}</td>
+                    <td data-label="Actualizado">
+                      {formatDate(test.lastUpdatedAt)}
+                    </td>
                     <td data-label="Estado">
-                      <span className={statusClass(test.status)}>{statusLabel(test.status)}</span>
+                      <span className={statusClass(test.status)}>
+                        {statusLabel(test.status)}
+                      </span>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           ) : (
-            <div className="empty">No hay suites para mostrar con el filtro actual.</div>
+            <div className="empty">
+              No hay suites para mostrar con el filtro actual.
+            </div>
           )}
         </article>
       </section>

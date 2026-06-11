@@ -8,7 +8,13 @@ interface HeroProps {
   totalSuites: number
 }
 
-export function Hero({ theme, onToggleTheme, runState, updatedAt, totalSuites }: HeroProps) {
+export function Hero({
+  theme,
+  onToggleTheme,
+  runState,
+  updatedAt,
+  totalSuites,
+}: HeroProps) {
   const formatLabel = (status: string) => {
     const labels: Record<string, string> = {
       completed: 'Completada',

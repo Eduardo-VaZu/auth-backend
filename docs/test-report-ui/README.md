@@ -56,6 +56,7 @@ npm run test:report:dynamic
 ```
 
 Este comando:
+
 - Ejecuta `type:check`
 - Ejecuta cada suite de pruebas individualmente
 - Ejecuta `test:coverage`
@@ -72,6 +73,7 @@ npm run dashboard:dev
 Abrir http://localhost:5173/ en el navegador.
 
 **Características del modo desarrollo:**
+
 - Hot reload automático al cambiar código
 - Datos se recargan cada 3 segundos desde `public/data.js`
 - Modo oscuro/claro persistente en localStorage
@@ -92,32 +94,36 @@ npm run dashboard:preview
 
 ## Scripts Disponibles
 
-| Comando | Descripción |
-|---------|-------------|
-| `npm run dashboard:dev` | Inicia servidor de desarrollo en http://localhost:5173/ |
-| `npm run dashboard:build` | Genera build de producción en `dist/` |
-| `npm run dashboard:preview` | Sirve el build de producción localmente |
-| `npm run test:report:dynamic` | Genera data.js ejecutando todas las pruebas |
-| `npm run test:report:clean` | Limpia data.js |
+| Comando                       | Descripción                                             |
+| ----------------------------- | ------------------------------------------------------- |
+| `npm run dashboard:dev`       | Inicia servidor de desarrollo en http://localhost:5173/ |
+| `npm run dashboard:build`     | Genera build de producción en `dist/`                   |
+| `npm run dashboard:preview`   | Sirve el build de producción localmente                 |
+| `npm run test:report:dynamic` | Genera data.js ejecutando todas las pruebas             |
+| `npm run test:report:clean`   | Limpia data.js                                          |
 
 ## Pestañas del Tablero
 
 ### Resumen
+
 - Estado general de ejecución
 - Gráfico de distribución de suites (aprobadas/fallidas/pendientes)
 - Gráfico de cobertura global (statements/branches/functions/lines)
 
 ### Suites
+
 - Tabla completa de suites detectadas
 - Filtros por estado (Todas/Aprobadas/Fallidas/En ejecución/Pendientes)
 - Detalles de cada suite (módulo, tipo, resultado, actualizado)
 
 ### Coverage
+
 - Tabla de cobertura por archivo
 - Glosario de métricas
 - Resumen de thresholds
 
 ### Análisis
+
 - Tasa de aprobación calculada automáticamente
 - Coverage vs thresholds configurados
 - Lista de suites fallidas
@@ -125,6 +131,7 @@ npm run dashboard:preview
 - Recomendaciones automáticas
 
 ### Conclusiones
+
 - Análisis de cobertura de pruebas
 - Calidad de implementación
 - Defectos identificados
@@ -132,27 +139,32 @@ npm run dashboard:preview
 - Próximos pasos
 
 ### Comandos
+
 - Lista de comandos ejecutados
 - Estado de cada comando
 - Salida completa (stdout/stderr)
 
 ### Hallazgos
+
 - Issues detectados automáticamente
 - Contexto del tablero
 
 ## Características
 
 ### Modo Oscuro/Claro
+
 - Botón de toggle en el header
 - Preferencia guardada en localStorage
 - Tema por defecto: oscuro
 
 ### Actualización Automática
+
 - Datos se recargan cada 3 segundos
 - Gráficos se actualizan sin parpadeo
 - Detección de cambios en `data.js`
 
 ### Responsive Design
+
 - Adaptable a móviles y tablets
 - Tablas se transforman en cards en pantallas pequeñas
 - Grid flexible para estadísticas
@@ -194,11 +206,13 @@ React app lee data.js cada 3s
 ### El tablero no muestra datos
 
 1. Verificar que `data.js` existe en `public/`:
+
    ```bash
    ls docs/test-report-ui/public/data.js
    ```
 
 2. Regenerar datos:
+
    ```bash
    npm run test:report:dynamic
    ```

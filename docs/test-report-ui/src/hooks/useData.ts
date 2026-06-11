@@ -19,11 +19,15 @@ const defaultData: TestReportData = {
     rows: [],
     summary: {},
     glossary: {
-      statements: 'Porcentaje de instrucciones del codigo ejecutadas por las pruebas.',
-      branches: 'Porcentaje de caminos condicionales cubiertos, por ejemplo if/else o ternarios.',
-      functions: 'Porcentaje de funciones o metodos ejecutados al menos una vez.',
+      statements:
+        'Porcentaje de instrucciones del codigo ejecutadas por las pruebas.',
+      branches:
+        'Porcentaje de caminos condicionales cubiertos, por ejemplo if/else o ternarios.',
+      functions:
+        'Porcentaje de funciones o metodos ejecutados al menos una vez.',
       lines: 'Porcentaje de lineas ejecutadas durante la corrida.',
-      uncovered: 'Lineas o rangos que no fueron cubiertos por las pruebas segun el reporte.',
+      uncovered:
+        'Lineas o rangos que no fueron cubiertos por las pruebas segun el reporte.',
     },
   },
   highlights: [],

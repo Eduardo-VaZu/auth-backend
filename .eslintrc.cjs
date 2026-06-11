@@ -22,6 +22,7 @@ module.exports = {
     'drizzle/',
     'coverage/',
     'node_modules/',
+    'docs/test-report-ui/',
     '.eslintrc.cjs',
     'scripts/',
     'vitest.config.mts',

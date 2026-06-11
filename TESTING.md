@@ -28,6 +28,7 @@ npm run test:report:dynamic
 ```
 
 Este comando:
+
 - Ejecuta `type:check`
 - Ejecuta cada suite de pruebas individualmente
 - Ejecuta `test:coverage`
@@ -45,6 +46,7 @@ npm run dashboard:dev
 Abrir http://localhost:5173/ en el navegador.
 
 **Ventajas:**
+
 - ✅ Hot reload automático al cambiar código
 - ✅ Interfaz más rápida y fluida
 - ✅ Arquitectura de componentes (fácil de mantener)
@@ -54,6 +56,7 @@ Abrir http://localhost:5173/ en el navegador.
 #### Versión HTML Estática (CI/CD y compartir)
 
 El archivo `docs/test-report/index.html` se mantiene como **artifact estático** para:
+
 - Adjuntar en reportes de evaluación
 - Compartir sin necesidad de servidor
 - CI/CD artifacts
@@ -107,34 +110,34 @@ npm run dashboard:preview
 
 ### Pruebas
 
-| Comando | Descripción |
-|---------|-------------|
-| `npm run type:check` | Verificar tipos TypeScript |
-| `npm run lint` | Ejecutar ESLint |
-| `npm run test:unit` | Pruebas unitarias |
-| `npm run test:integration` | Pruebas de integración |
-| `npm run test:coverage` | Coverage con reporte |
-| `npm run test:all` | Ejecutar todo (typecheck + unit + integration + coverage) |
-| `npm run pr:check` | Validación completa para PR |
+| Comando                    | Descripción                                               |
+| -------------------------- | --------------------------------------------------------- |
+| `npm run type:check`       | Verificar tipos TypeScript                                |
+| `npm run lint`             | Ejecutar ESLint                                           |
+| `npm run test:unit`        | Pruebas unitarias                                         |
+| `npm run test:integration` | Pruebas de integración                                    |
+| `npm run test:coverage`    | Coverage con reporte                                      |
+| `npm run test:all`         | Ejecutar todo (typecheck + unit + integration + coverage) |
+| `npm run pr:check`         | Validación completa para PR                               |
 
 ### Tablero
 
-| Comando | Descripción |
-|---------|-------------|
-| `npm run test:report:dynamic` | Generar datos del tablero |
-| `npm run test:report:clean` | Limpiar datos del tablero |
-| `npm run dashboard:dev` | Iniciar tablero React en modo desarrollo |
-| `npm run dashboard:build` | Generar build de producción del tablero |
-| `npm run dashboard:preview` | Servir build de producción localmente |
+| Comando                       | Descripción                              |
+| ----------------------------- | ---------------------------------------- |
+| `npm run test:report:dynamic` | Generar datos del tablero                |
+| `npm run test:report:clean`   | Limpiar datos del tablero                |
+| `npm run dashboard:dev`       | Iniciar tablero React en modo desarrollo |
+| `npm run dashboard:build`     | Generar build de producción del tablero  |
+| `npm run dashboard:preview`   | Servir build de producción localmente    |
 
 ### Docker
 
-| Comando | Descripción |
-|---------|-------------|
-| `npm run docker:up:d` | Iniciar PostgreSQL y Redis |
-| `npm run docker:up:full` | Iniciar todos los servicios |
-| `npm run docker:down` | Detener servicios |
-| `npm run dev:local` | Iniciar Docker + servidor de desarrollo |
+| Comando                  | Descripción                             |
+| ------------------------ | --------------------------------------- |
+| `npm run docker:up:d`    | Iniciar PostgreSQL y Redis              |
+| `npm run docker:up:full` | Iniciar todos los servicios             |
+| `npm run docker:down`    | Detener servicios                       |
+| `npm run dev:local`      | Iniciar Docker + servidor de desarrollo |
 
 ## Estructura de Pruebas
 
@@ -168,6 +171,7 @@ npm run docker:down
 ```
 
 **Servicios necesarios:**
+
 - PostgreSQL (puerto 5432)
 - Redis (puerto 6379)
 
@@ -194,12 +198,12 @@ npm run docker:down
 
 ### Thresholds Configurados
 
-| Métrica | Threshold |
-|---------|-----------|
-| Statements | 45% |
-| Branches | 40% |
-| Functions | 40% |
-| Lines | 45% |
+| Métrica    | Threshold |
+| ---------- | --------- |
+| Statements | 45%       |
+| Branches   | 40%       |
+| Functions  | 40%       |
+| Lines      | 45%       |
 
 ## Troubleshooting
 
@@ -247,6 +251,7 @@ npm run dashboard:dev
 El coverage actual está por debajo de los thresholds configurados. Esto es esperado en etapas tempranas del proyecto.
 
 **Recomendaciones:**
+
 - Agregar tests para domain entities (0% coverage)
 - Agregar tests para repositories
 - Agregar tests para controllers

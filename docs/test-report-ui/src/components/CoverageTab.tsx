@@ -14,7 +14,10 @@ export function CoverageTab({ data }: CoverageTabProps) {
       <section className="one-col">
         <article className="card section">
           <h2>Tabla de Coverage</h2>
-          <p className="lead">Apartado dedicado al reporte de cobertura extraido desde la salida real de <code className="mono">npm run test:coverage</code>.</p>
+          <p className="lead">
+            Apartado dedicado al reporte de cobertura extraido desde la salida
+            real de <code className="mono">npm run test:coverage</code>.
+          </p>
 
           <div className="coverage-summary-grid">
             {Object.entries(glossary).map(([key, value]) => (
@@ -52,7 +55,9 @@ export function CoverageTab({ data }: CoverageTabProps) {
                     <tr key={index}>
                       <td data-label="Archivo">
                         <div>{row.displayLabel || row.file}</div>
-                        <div className="summary-meta">{row.resolvedPath || row.file}</div>
+                        <div className="summary-meta">
+                          {row.resolvedPath || row.file}
+                        </div>
                       </td>
                       <td data-label="% Stmts">{row.statements}</td>
                       <td data-label="% Branch">{row.branches}</td>
@@ -65,7 +70,9 @@ export function CoverageTab({ data }: CoverageTabProps) {
               </table>
             </div>
           ) : (
-            <div className="empty">Aun no hay datos de coverage para mostrar.</div>
+            <div className="empty">
+              Aun no hay datos de coverage para mostrar.
+            </div>
           )}
         </article>
       </section>
