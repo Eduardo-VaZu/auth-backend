@@ -11,8 +11,8 @@ Estados permitidos: `Pendiente | En curso | Hecho`.
 | 1          | identity          | Integration | RegisterFlow.test.ts                     | Pendiente | -                                           | -          | -   |
 | 2          | access            | Unit        | LoginUseCase.test.ts                     | Pendiente | -                                           | -          | -   |
 | 2          | access            | Integration | LoginFlow.test.ts                        | Pendiente | -                                           | -          | -   |
-| 3          | access            | Unit        | SessionUseCases.test.ts                  | Pendiente | -                                           | -          | -   |
-| 3          | access            | Integration | SessionLifecycle.test.ts                 | Pendiente | -                                           | -          | -   |
+| 3          | access            | Unit        | SessionUseCases.test.ts                  | Hecho     | `vitest run` (7 unit tests, 132ms)          | 2026-06-11 | -   |
+| 3          | access            | Integration | SessionLifecycle.test.ts                 | Hecho     | `vitest run` (6 integration tests, 97ms)    | 2026-06-11 | -   |
 | 4          | credentials       | Unit        | CredentialsUseCases.test.ts              | Hecho     | `vitest run` (28 unit tests, 110ms)         | 2026-06-11 | -   |
 | 4          | credentials       | Integration | CredentialsFlow.test.ts                  | Hecho     | `vitest run` (8 integration tests, 77ms)    | 2026-06-11 | -   |
 | 5          | admin/audit/infra | Unit        | AdminUseCases.test.ts                    | Hecho     | `npm run test:unit` (18 tests, 28ms)        | 2026-06-08 | -   |

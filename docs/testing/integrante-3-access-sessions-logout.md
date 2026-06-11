@@ -81,11 +81,37 @@ npm run test:integration
 
 ## Checklist de entrega
 
-- [ ] Unit AccessDomain
-- [ ] Unit SessionUseCases
-- [ ] Unit SessionRepositories
-- [ ] Integration SessionLifecycle
-- [ ] Evidencia de comandos
+- [x] Unit AccessDomain
+- [x] Unit SessionUseCases
+- [x] Unit SessionRepositories
+- [x] Integration SessionLifecycle
+- [x] Evidencia de comandos
+
+## Evidencia de comandos
+
+### Pruebas Unitarias
+
+`npm run test:unit`
+
+```bash
+ ✓  unit  tests/modules/access/application/unit/SessionUseCases.test.ts (7 tests) 132ms
+ ✓  unit  tests/modules/access/domain/unit/AccessDomain.test.ts (9 tests) 46ms
+ ✓  unit  tests/modules/access/infrastructure/unit/SessionRepositories.test.ts (10 tests) 77ms
+
+Test Files  17 passed (17)
+     Tests  98 passed (98)
+```
+
+### Pruebas de Integración
+
+`npm run test:integration`
+
+```bash
+ ✓  integration  tests/modules/access/integration/SessionLifecycle.test.ts (6 tests) 193ms
+
+Test Files  7 passed (7)
+     Tests  28 passed (28)
+```
 
 ## Criterio de Done
 
