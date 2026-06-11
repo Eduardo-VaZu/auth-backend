@@ -36,36 +36,64 @@ describe('LoginUseCase', () => {
 
   beforeEach(() => {
     mockUserRepository = { findByEmail: vi.fn().mockResolvedValue(validUser) }
-    mockCredentialRepository = { findByUserId: vi.fn().mockResolvedValue({ userId: validUser.id, passwordHash }) }
+    mockCredentialRepository = {
+      findByUserId: vi
+        .fn()
+        .mockResolvedValue({ userId: validUser.id, passwordHash }),
+    }
 
     mockThrottleService = {
-      checkLoginAllowed: vi.fn().mockResolvedValue({ accountLocked: false, ipLocked: false }),
+      checkLoginAllowed: vi
+        .fn()
+        .mockResolvedValue({ accountLocked: false, ipLocked: false }),
 
       recordLoginFailure: vi.fn().mockResolvedValue({
-        accountLocked: false, ipLocked: false, accountAttempts: 1, ipAttempts: 1,
-        accountLockTtlSeconds: 0, ipLockTtlSeconds: 0, passwordSprayingDetected: false, distinctAccountsFromIp: 1
+        accountLocked: false,
+        ipLocked: false,
+        accountAttempts: 1,
+        ipAttempts: 1,
+        accountLockTtlSeconds: 0,
+        ipLockTtlSeconds: 0,
+        passwordSprayingDetected: false,
+        distinctAccountsFromIp: 1,
       }),
 
-      clearAccountLoginFailures: vi.fn().mockResolvedValue(true)
+      clearAccountLoginFailures: vi.fn().mockResolvedValue(true),
     }
 
     mockAuditService = { recordEvent: vi.fn() }
 
     mockTokenService = {
-      generateRefreshToken: vi.fn().mockResolvedValue({ token: 'rt', jti: 'jti', expiresAt: new Date() }),
-      generateAccessToken: vi.fn().mockResolvedValue({ token: 'at' })
+      generateRefreshToken: vi
+        .fn()
+        .mockResolvedValue({ token: 'rt', jti: 'jti', expiresAt: new Date() }),
+      generateAccessToken: vi.fn().mockResolvedValue({ token: 'at' }),
     }
 
-    mockSessionStore = { storeRefreshToken: vi.fn(), deleteRefreshToken: vi.fn() }
+    mockSessionStore = {
+      storeRefreshToken: vi.fn(),
+      deleteRefreshToken: vi.fn(),
+    }
 
     mockAuthUnitOfWork = {
-      run: vi.fn((cb) => cb({
-        authAuditService: mockAuditService,
-        refreshTokenRepository: { create: vi.fn(), findLatestActiveBySessionId: vi.fn(), revokeAllBySessionId: vi.fn() },
-        userRepository: { updateLastLoginAt: vi.fn() },
-        userSessionRepository: { countActiveByUserId: vi.fn().mockResolvedValue(0), findOldestActiveByUserId: vi.fn(), revokeBySessionKey: vi.fn(), create: vi.fn().mockResolvedValue({ id: 'sess-1' }) },
-        acquireUserMutationLock: vi.fn()
-      }))
+      run: vi.fn((cb) =>
+        cb({
+          authAuditService: mockAuditService,
+          refreshTokenRepository: {
+            create: vi.fn(),
+            findLatestActiveBySessionId: vi.fn(),
+            revokeAllBySessionId: vi.fn(),
+          },
+          userRepository: { updateLastLoginAt: vi.fn() },
+          userSessionRepository: {
+            countActiveByUserId: vi.fn().mockResolvedValue(0),
+            findOldestActiveByUserId: vi.fn(),
+            revokeBySessionKey: vi.fn(),
+            create: vi.fn().mockResolvedValue({ id: 'sess-1' }),
+          },
+          acquireUserMutationLock: vi.fn(),
+        }),
+      ),
     }
 
     useCase = new LoginUseCase(
@@ -75,23 +103,38 @@ describe('LoginUseCase', () => {
       mockSessionStore,
       mockAuditService,
       mockAuthUnitOfWork,
-      mockThrottleService
+      mockThrottleService,
     )
   })
 
   it('Login con Contraseña Incorrecta y Registro de Evento', async () => {
-    await expect(useCase.execute({ email: 'test@ejemplo.com', password: 'wrong-password', ipAddress: '127.0.0.1', userAgent: '', requestId: '' }))
-      .rejects.toThrowError(UnauthorizedError)
+    await expect(
+      useCase.execute({
+        email: 'test@ejemplo.com',
+        password: 'wrong-password',
+        ipAddress: '127.0.0.1',
+        userAgent: '',
+        requestId: '',
+      }),
+    ).rejects.toThrowError(UnauthorizedError)
 
     // Matchers para verificar que se llamaron a estos metodos almenos una vez durante la ejecución del método execute
-    expect(mockUserRepository.findByEmail).toHaveBeenCalledWith('test@ejemplo.com')
+    expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
+      'test@ejemplo.com',
+    )
     expect(mockThrottleService.recordLoginFailure).toHaveBeenCalled()
     expect(mockTokenService.generateAccessToken).not.toHaveBeenCalled()
     expect(mockAuditService.recordEvent).toHaveBeenCalled()
   })
 
   it('Login exitoso crea access/refresh, sesion y auditoria', async () => {
-    const result = await useCase.execute({ email: 'test@ejemplo.com', password: 'correct-password', ipAddress: '127.0.0.1', userAgent: '', requestId: '' })
+    const result = await useCase.execute({
+      email: 'test@ejemplo.com',
+      password: 'correct-password',
+      ipAddress: '127.0.0.1',
+      userAgent: '',
+      requestId: '',
+    })
 
     expect(result.accessToken).toBe('at')
     expect(mockTokenService.generateAccessToken).toHaveBeenCalled()
@@ -104,24 +147,53 @@ describe('LoginUseCase', () => {
     // Para este test, modificamos el return de este mock
     mockUserRepository.findByEmail.mockResolvedValue(null)
 
-    await expect(useCase.execute({ email: 'no_existe@ejemplo.com', password: 'pw', ipAddress: '127.0.0.1', userAgent: '', requestId: '' }))
-      .rejects.toThrowError(UnauthorizedError)
+    await expect(
+      useCase.execute({
+        email: 'no_existe@ejemplo.com',
+        password: 'pw',
+        ipAddress: '127.0.0.1',
+        userAgent: '',
+        requestId: '',
+      }),
+    ).rejects.toThrowError(UnauthorizedError)
   })
 
   it('Usuario no autenticado es rechazado', async () => {
     // Simulamos un usuario sin autenticación
-    mockUserRepository.findByEmail.mockResolvedValue({ id: 'user-1', canAuthenticate: () => false })
+    mockUserRepository.findByEmail.mockResolvedValue({
+      id: 'user-1',
+      canAuthenticate: () => false,
+    })
 
-    await expect(useCase.execute({ email: 'baneado@ejemplo.com', password: 'pw', ipAddress: '127.0.0.1', userAgent: '', requestId: '' }))
-      .rejects.toThrowError(UnauthorizedError)
+    await expect(
+      useCase.execute({
+        email: 'baneado@ejemplo.com',
+        password: 'pw',
+        ipAddress: '127.0.0.1',
+        userAgent: '',
+        requestId: '',
+      }),
+    ).rejects.toThrowError(UnauthorizedError)
   })
 
   it('Throttle bloquea usuario por umbral y registra evento', async () => {
     // Simulamos cuenta bloqueada
-    mockThrottleService.checkLoginAllowed.mockResolvedValue({ accountLocked: true, ipLocked: false, accountTtlSeconds: 300, ipTtlSeconds: 0 })
+    mockThrottleService.checkLoginAllowed.mockResolvedValue({
+      accountLocked: true,
+      ipLocked: false,
+      accountTtlSeconds: 300,
+      ipTtlSeconds: 0,
+    })
 
-    await expect(useCase.execute({ email: 'spam@ejemplo.com', password: 'pw', ipAddress: '127.0.0.1', userAgent: '', requestId: '' }))
-      .rejects.toThrowError('Too many login attempts. Try again later.')
+    await expect(
+      useCase.execute({
+        email: 'spam@ejemplo.com',
+        password: 'pw',
+        ipAddress: '127.0.0.1',
+        userAgent: '',
+        requestId: '',
+      }),
+    ).rejects.toThrowError('Too many login attempts. Try again later.')
 
     expect(mockAuditService.recordEvent).toHaveBeenCalled()
   })
@@ -131,17 +203,45 @@ describe('LoginUseCase', () => {
     const revokeOldestSession = vi.fn()
     const revokeOldestTokens = vi.fn()
 
-    mockAuthUnitOfWork.run = vi.fn((cb) => cb({
-      authAuditService: mockAuditService,
-      refreshTokenRepository: { create: vi.fn(), findLatestActiveBySessionId: vi.fn().mockResolvedValue({ jti: 'old-jti' }), revokeAllBySessionId: revokeOldestTokens },
-      userRepository: { updateLastLoginAt: vi.fn() },
-      userSessionRepository: { countActiveByUserId: vi.fn().mockResolvedValue(5), findOldestActiveByUserId: vi.fn().mockResolvedValue({ id: 'old-sess', sessionKey: 'old-key' }), revokeBySessionKey: revokeOldestSession, create: vi.fn().mockResolvedValue({ id: 'sess-new' }) },
-      acquireUserMutationLock: vi.fn()
-    }))
+    mockAuthUnitOfWork.run = vi.fn((cb) =>
+      cb({
+        authAuditService: mockAuditService,
+        refreshTokenRepository: {
+          create: vi.fn(),
+          findLatestActiveBySessionId: vi
+            .fn()
+            .mockResolvedValue({ jti: 'old-jti' }),
+          revokeAllBySessionId: revokeOldestTokens,
+        },
+        userRepository: { updateLastLoginAt: vi.fn() },
+        userSessionRepository: {
+          countActiveByUserId: vi.fn().mockResolvedValue(5),
+          findOldestActiveByUserId: vi
+            .fn()
+            .mockResolvedValue({ id: 'old-sess', sessionKey: 'old-key' }),
+          revokeBySessionKey: revokeOldestSession,
+          create: vi.fn().mockResolvedValue({ id: 'sess-new' }),
+        },
+        acquireUserMutationLock: vi.fn(),
+      }),
+    )
 
-    await useCase.execute({ email: 'test@ejemplo.com', password: 'correct-password', ipAddress: '127.0.0.1', userAgent: '', requestId: '' })
+    await useCase.execute({
+      email: 'test@ejemplo.com',
+      password: 'correct-password',
+      ipAddress: '127.0.0.1',
+      userAgent: '',
+      requestId: '',
+    })
 
-    expect(revokeOldestSession).toHaveBeenCalledWith('old-key', expect.any(Date), 'session_limit_exceeded')
-    expect(mockSessionStore.deleteRefreshToken).toHaveBeenCalledWith(validUser.id, 'old-jti')
+    expect(revokeOldestSession).toHaveBeenCalledWith(
+      'old-key',
+      expect.any(Date),
+      'session_limit_exceeded',
+    )
+    expect(mockSessionStore.deleteRefreshToken).toHaveBeenCalledWith(
+      validUser.id,
+      'old-jti',
+    )
   })
 })
