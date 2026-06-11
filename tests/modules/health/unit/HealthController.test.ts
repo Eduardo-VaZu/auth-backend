@@ -44,7 +44,7 @@ describe('HealthController', () => {
     redisSpy.mockRestore()
   })
 
-  it('returns 503 when PostgreSQL fails', async () => {
+  it('returns 503 when PostgreSQL fails and Redis is ok', async () => {
     const pgSpy = vi
       .spyOn(dbModule, 'checkPostgresHealth')
       .mockResolvedValue({ status: 'error', latencyMs: 100 })
@@ -64,7 +64,7 @@ describe('HealthController', () => {
     redisSpy.mockRestore()
   })
 
-  it('returns 503 when Redis fails', async () => {
+  it('returns 503 when Redis fails and PostgreSQL is ok', async () => {
     const pgSpy = vi
       .spyOn(dbModule, 'checkPostgresHealth')
       .mockResolvedValue({ status: 'ok', latencyMs: 10 })
