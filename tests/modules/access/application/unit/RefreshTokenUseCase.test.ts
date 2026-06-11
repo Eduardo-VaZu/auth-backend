@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, it, vi, beforeAll, beforeEach } from 'vitest'
 import argon2 from 'argon2'
 import { RefreshTokenUseCase } from '@/modules/access/application/use-cases/RefreshTokenUseCase.js'
@@ -69,11 +70,11 @@ describe('RefreshTokenUseCase', () => {
     }
 
     useCase = new RefreshTokenUseCase(
-      mockRefreshTokenRepo as unknown as IRefreshTokenRepository,
-      mockUserRepo as unknown as IUserRepository,
-      mockTokenService as unknown as ITokenService,
-      mockSessionStore as unknown as ISessionStore,
-      mockAuthUnitOfWork as unknown as IAuthUnitOfWork
+      mockRefreshTokenRepo,
+      mockUserRepo,
+      mockTokenService,
+      mockSessionStore,
+      mockAuthUnitOfWork
     )
   })
 

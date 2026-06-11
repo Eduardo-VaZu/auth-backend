@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console, @typescript-eslint/no-explicit-any */
 import { describe, expect, it, beforeAll, afterAll } from 'vitest'
 import request from 'supertest'
 import type { Express } from 'express'

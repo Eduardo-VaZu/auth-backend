@@ -1,16 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, expect, it, vi, beforeAll, beforeEach } from 'vitest'
 import argon2 from 'argon2'
 import { LoginUseCase } from '@/modules/access/application/use-cases/LoginUseCase.js'
 import { User } from '@/modules/identity/domain/entities/User.js'
 import { UnauthorizedError } from '@/shared/errors/HttpErrors.js'
-
-import type { IUserRepository } from '@/modules/identity/domain/repositories/IUserRepository.js'
-import type { IUserCredentialRepository } from '@/modules/credentials/domain/repositories/IUserCredentialRepository.js'
-import type { ITokenService } from '@/modules/access/domain/services/ITokenService.js'
-import type { ISessionStore } from '@/modules/access/domain/services/ISessionStore.js'
-import type { IAuthAuditService } from '@/modules/audit/domain/services/IAuthAuditService.js'
-import type { IAuthUnitOfWork } from '@/shared/domain/services/IAuthUnitOfWork.js'
-import type { ISecurityThrottleService } from '@/modules/access/domain/services/ISecurityThrottleService.js'
 
 describe('LoginUseCase', () => {
   let passwordHash: string
@@ -76,13 +69,13 @@ describe('LoginUseCase', () => {
     }
 
     useCase = new LoginUseCase(
-      mockUserRepository as unknown as IUserRepository,
-      mockCredentialRepository as unknown as IUserCredentialRepository,
-      mockTokenService as unknown as ITokenService,
-      mockSessionStore as unknown as ISessionStore,
-      mockAuditService as unknown as IAuthAuditService,
-      mockAuthUnitOfWork as unknown as IAuthUnitOfWork,
-      mockThrottleService as unknown as ISecurityThrottleService
+      mockUserRepository,
+      mockCredentialRepository,
+      mockTokenService,
+      mockSessionStore,
+      mockAuditService,
+      mockAuthUnitOfWork,
+      mockThrottleService
     )
   })
 
