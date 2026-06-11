@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 22.x
           cache: npm
-      - run: npm i
+      - run: npm install
       - run: npm run type:check
       - run: npm run lint
       - run: npm run format:check
@@ -36,8 +36,8 @@ jobs:
         with:
           node-version: 22.x
           cache: npm
-      - run: npm i
-      - run: npm run test:unit:ci
+      - run: npm install
+      - run: npm run test:unit
       - name: Unit coverage report (non-blocking while thresholds are ramping)
         if: always()
         continue-on-error: true
@@ -100,11 +100,11 @@ jobs:
         with:
           node-version: 22.x
           cache: npm
-      - run: npm i
+      - run: npm install
       - run: npm run build
       - run: npm run db:migrate
       - run: npm run db:seed:roles
-      - run: npm run test:integration:ci
+      - run: npm run test:integration
 
   build:
     name: Production Build
@@ -117,5 +117,5 @@ jobs:
         with:
           node-version: 22.x
           cache: npm
-      - run: npm i
+      - run: npm install
       - run: npm run build
