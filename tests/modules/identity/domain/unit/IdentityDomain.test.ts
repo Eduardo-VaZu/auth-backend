@@ -16,7 +16,9 @@ describe('Identity Domain', () => {
 
     it('accepts a valid email without throwing', () => {
       expect(() => new Email('user@example.com')).not.toThrow()
-      const email = new Email('user@example.com') as unknown as { value: string }
+      const email = new Email('user@example.com') as unknown as {
+        value: string
+      }
       expect(email.value).toBe('user@example.com')
     })
 
@@ -71,12 +73,18 @@ describe('Identity Domain', () => {
     })
 
     it('primaryRole returns admin when roles include admin', () => {
-      const user = new User({ ...baseProps, roles: ['user', 'admin'] as UserRole[] })
+      const user = new User({
+        ...baseProps,
+        roles: ['user', 'admin'] as UserRole[],
+      })
       expect(user.primaryRole()).toBe('admin')
     })
 
     it('primaryRole returns first role when admin is not present', () => {
-      const user = new User({ ...baseProps, roles: ['editor', 'user'] as UserRole[] })
+      const user = new User({
+        ...baseProps,
+        roles: ['editor', 'user'] as UserRole[],
+      })
       expect(user.primaryRole()).toBe('editor')
     })
 

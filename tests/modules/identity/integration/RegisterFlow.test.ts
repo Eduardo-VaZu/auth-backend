@@ -101,7 +101,7 @@ describe('Register Flow Integration (HTTP & Testcontainers)', () => {
   it('GET /health returns 200 with expected payload', async () => {
     console.log('[AUDIT] Test: GET /health')
     const response = await request(app).get('/health')
-    
+
     expect(response.status).toBe(200)
     expect(response.body).toEqual(
       expect.objectContaining({
@@ -109,20 +109,24 @@ describe('Register Flow Integration (HTTP & Testcontainers)', () => {
         timestamp: expect.any(String),
         uptime: expect.any(Number),
         dependencies: expect.any(Object),
-      })
+      }),
     )
   })
 
   it('POST /auth/register does not set automatic login cookies', async () => {
-    console.log(`[AUDIT] Test: POST /auth/register (Successful registration: ${testUser.email})`)
+    console.log(
+      `[AUDIT] Test: POST /auth/register (Successful registration: ${testUser.email})`,
+    )
     const response = await request(app).post('/auth/register').send(testUser)
 
     expect(response.status).toBe(201)
 
-    const setCookieHeader = response.headers['set-cookie'] as string[] | undefined
+    const setCookieHeader = response.headers['set-cookie'] as
+      | string[]
+      | undefined
     if (setCookieHeader && Array.isArray(setCookieHeader)) {
       const hasAuthCookies = setCookieHeader.some(
-        (c) => c.includes('access_token') || c.includes('refresh_token')
+        (c) => c.includes('access_token') || c.includes('refresh_token'),
       )
       expect(hasAuthCookies).toBe(false)
     } else {
