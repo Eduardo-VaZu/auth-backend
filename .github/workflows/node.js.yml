@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 22.x
           cache: npm
-      - run: npm install
+      - run: npm ci
       - run: npm run type:check
       - run: npm run lint
       - run: npm run format:check
@@ -100,7 +100,7 @@ jobs:
         with:
           node-version: 22.x
           cache: npm
-      - run: npm ci
+      - run: npm install
       - run: npm run build
       - run: npm run db:migrate
       - run: npm run db:seed:roles
