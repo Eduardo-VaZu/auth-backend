@@ -28,9 +28,7 @@ export function ProgressBar({
         />
       </div>
       {showPercentage && (
-        <div className="progress-bar-value">
-          {percentage.toFixed(1)}%
-        </div>
+        <div className="progress-bar-value">{percentage.toFixed(1)}%</div>
       )}
     </div>
   )

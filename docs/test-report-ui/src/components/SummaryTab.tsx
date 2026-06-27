@@ -169,7 +169,9 @@ export function SummaryTab({ data, theme }: SummaryTabProps) {
           />
           <div className="stack" style={{ marginTop: '16px' }}>
             <div className="callout">
-              <strong>{data.summary.passed} / {data.summary.total}</strong>
+              <strong>
+                {data.summary.passed} / {data.summary.total}
+              </strong>
               <div>{passRate.toFixed(1)}% de aprobacion</div>
             </div>
           </div>
@@ -179,9 +181,7 @@ export function SummaryTab({ data, theme }: SummaryTabProps) {
       <section className="two-col" style={{ marginTop: '24px' }}>
         <article className="card section">
           <h2>Cobertura de Codigo</h2>
-          <p className="lead">
-            Porcentaje de cobertura global por metrica.
-          </p>
+          <p className="lead">Porcentaje de cobertura global por metrica.</p>
           <ProgressBar
             value={parseMetric(coverageRow?.statements)}
             label="Statements"
