@@ -81,11 +81,11 @@ npm run test:integration
 
 ## Checklist de entrega
 
-- [ ] Unit Health
-- [ ] Unit Identity domain
-- [ ] Unit RegisterUseCase
-- [ ] Integration RegisterFlow
-- [ ] Evidencia de comandos
+- [x] Unit Health
+- [x] Unit Identity domain
+- [x] Unit RegisterUseCase
+- [x] Integration RegisterFlow
+- [x] Evidencia de comandos
 
 ## Criterio de Done
 

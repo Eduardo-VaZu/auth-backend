@@ -9,6 +9,8 @@ import {
 } from 'chart.js'
 import { Doughnut, Bar } from 'react-chartjs-2'
 import type { TestReportData } from '../types'
+import type { Theme } from '../hooks/useTheme'
+import { ProgressBar } from './ProgressBar'
 
 ChartJS.register(
   ArcElement,
@@ -21,9 +23,15 @@ ChartJS.register(
 
 interface SummaryTabProps {
   data: TestReportData
+  theme: Theme
 }
 
-export function SummaryTab({ data }: SummaryTabProps) {
+export function SummaryTab({ data, theme }: SummaryTabProps) {
+  const inkColor = theme === 'dark' ? '#e5e7eb' : '#1f2937'
+  const mutedColor = theme === 'dark' ? '#9ca3af' : '#6b7280'
+  const gridColor =
+    theme === 'dark' ? 'rgba(45, 49, 72, 0.9)' : 'rgba(229, 220, 207, 0.9)'
+
   const suiteData = {
     labels: ['Aprobadas', 'Fallidas', 'Pendientes', 'En ejecucion'],
     datasets: [
@@ -68,6 +76,11 @@ export function SummaryTab({ data }: SummaryTabProps) {
     ],
   }
 
+  const passRate =
+    data.summary.total > 0
+      ? (data.summary.passed / data.summary.total) * 100
+      : 0
+
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -81,7 +94,7 @@ export function SummaryTab({ data }: SummaryTabProps) {
         labels: {
           usePointStyle: true,
           padding: 18,
-          color: '#1f2937',
+          color: inkColor,
         },
       },
     },
@@ -95,15 +108,15 @@ export function SummaryTab({ data }: SummaryTabProps) {
         max: 100,
         ticks: {
           callback: (value: number | string) => `${value}%`,
-          color: '#6b7280',
+          color: mutedColor,
         },
         grid: {
-          color: 'rgba(229, 220, 207, 0.9)',
+          color: gridColor,
         },
       },
       x: {
         ticks: {
-          color: '#1f2937',
+          color: inkColor,
         },
         grid: {
           display: false,
@@ -141,6 +154,54 @@ export function SummaryTab({ data }: SummaryTabProps) {
               <div>{data.summary.total} suites</div>
             </div>
           </div>
+        </article>
+
+        <article className="card section">
+          <h2>Tasa de Aprobacion</h2>
+          <p className="lead">
+            Porcentaje de suites aprobadas sobre el total detectado.
+          </p>
+          <ProgressBar
+            value={data.summary.passed}
+            maxValue={data.summary.total}
+            label="Tests Aprobados"
+            color="#0f766e"
+          />
+          <div className="stack" style={{ marginTop: '16px' }}>
+            <div className="callout">
+              <strong>{data.summary.passed} / {data.summary.total}</strong>
+              <div>{passRate.toFixed(1)}% de aprobacion</div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section className="two-col" style={{ marginTop: '24px' }}>
+        <article className="card section">
+          <h2>Cobertura de Codigo</h2>
+          <p className="lead">
+            Porcentaje de cobertura global por metrica.
+          </p>
+          <ProgressBar
+            value={parseMetric(coverageRow?.statements)}
+            label="Statements"
+            color="#0f766e"
+          />
+          <ProgressBar
+            value={parseMetric(coverageRow?.branches)}
+            label="Branches"
+            color="#0ea5e9"
+          />
+          <ProgressBar
+            value={parseMetric(coverageRow?.functions)}
+            label="Functions"
+            color="#f59e0b"
+          />
+          <ProgressBar
+            value={parseMetric(coverageRow?.lines)}
+            label="Lines"
+            color="#7c3aed"
+          />
         </article>
 
         <article className="card section">

@@ -176,6 +176,39 @@ describe('LoginUseCase', () => {
     ).rejects.toThrowError(UnauthorizedError)
   })
 
+  it('Throttle incrementa intentos al fallar login', async () => {
+    mockThrottleService.recordLoginFailure.mockResolvedValue({
+      accountLocked: false,
+      ipLocked: false,
+      accountAttempts: 3,
+      ipAttempts: 5,
+      accountLockTtlSeconds: 0,
+      ipLockTtlSeconds: 0,
+      passwordSprayingDetected: false,
+      distinctAccountsFromIp: 2,
+    })
+
+    await expect(
+      useCase.execute({
+        email: 'test@ejemplo.com',
+        password: 'wrong-password',
+        ipAddress: '192.168.1.1',
+        userAgent: '',
+        requestId: '',
+      }),
+    ).rejects.toThrowError(UnauthorizedError)
+
+    expect(mockThrottleService.recordLoginFailure).toHaveBeenCalledWith(
+      'test@ejemplo.com',
+      '192.168.1.1',
+    )
+
+    const result =
+      await mockThrottleService.recordLoginFailure.mock.results[0].value
+    expect(result.accountAttempts).toBe(3)
+    expect(result.ipAttempts).toBe(5)
+  })
+
   it('Throttle bloquea usuario por umbral y registra evento', async () => {
     // Simulamos cuenta bloqueada
     mockThrottleService.checkLoginAllowed.mockResolvedValue({
