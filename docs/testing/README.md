@@ -14,6 +14,8 @@ Este directorio divide la ejecucion de pruebas por integrante para evitar un doc
   - `docs/testing/integrante-4-credentials-email.md`
 - Integrante 5 (Admin + Audit + Infra + CI):
   - `docs/testing/integrante-5-admin-audit-infra-ci.md`
+- Alcance reducido:
+  - `docs/testing/alcance-solo-estos-files.md`
 
 ## Seguimiento
 

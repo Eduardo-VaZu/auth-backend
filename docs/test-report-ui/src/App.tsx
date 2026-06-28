@@ -21,7 +21,7 @@ function App() {
   const renderTab = () => {
     switch (activeTab) {
       case 'resumen':
-        return <SummaryTab data={data} />
+        return <SummaryTab data={data} theme={theme} />
       case 'suites':
         return <SuitesTab data={data} />
       case 'coverage':
@@ -35,7 +35,7 @@ function App() {
       case 'hallazgos':
         return <FindingsTab data={data} />
       default:
-        return <SummaryTab data={data} />
+        return <SummaryTab data={data} theme={theme} />
     }
   }
 

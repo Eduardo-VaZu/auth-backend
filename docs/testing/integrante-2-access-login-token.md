@@ -85,12 +85,12 @@ npm run test:integration
 
 ## Checklist de entrega
 
-- [ ] Unit LoginUseCase
-- [ ] Unit RefreshTokenUseCase
-- [ ] Unit Duration
-- [ ] Unit TokenService
-- [ ] Integration LoginFlow
-- [ ] Evidencia de comandos
+- [x] Unit LoginUseCase
+- [x] Unit RefreshTokenUseCase
+- [x] Unit Duration
+- [x] Unit TokenService
+- [x] Integration LoginFlow
+- [x] Evidencia de comandos
 
 ## Criterio de Done
 
