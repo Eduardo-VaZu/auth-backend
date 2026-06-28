@@ -51,7 +51,9 @@ describe('OWASP - Auth flow hardening integration', () => {
   const activateUserByEmail = async (email: string) => {
     const { db, sql } = getDatabaseDependencies()
 
-    await db.execute(sql`UPDATE users SET status = 'active' WHERE email = ${email}`)
+    await db.execute(
+      sql`UPDATE users SET status = 'active' WHERE email = ${email}`,
+    )
   }
 
   const registerAndActivateUser = async (credentials: {
@@ -156,12 +158,10 @@ describe('OWASP - Auth flow hardening integration', () => {
   })
 
   it('POST /auth/login returns same response for nonexistent user and wrong password', async () => {
-    const wrongPasswordResponse = await request(app)
-      .post('/auth/login')
-      .send({
-        email: testUser.email,
-        password: 'WrongPassword123!',
-      })
+    const wrongPasswordResponse = await request(app).post('/auth/login').send({
+      email: testUser.email,
+      password: 'WrongPassword123!',
+    })
 
     const nonexistentUserResponse = await request(app)
       .post('/auth/login')
