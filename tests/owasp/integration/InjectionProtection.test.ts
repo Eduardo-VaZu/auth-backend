@@ -6,7 +6,7 @@ import { container } from '@/container/inversify.config.js'
 import { TYPES } from '@/container/types.js'
 import type { AppRedisClient } from '@/infrastructure/redis.js'
 
-describe('SQL Injection Protection', () => {
+describe('OWASP - Login malicious payload rejection', () => {
   let app: Express
 
   beforeAll(async () => {
@@ -22,7 +22,7 @@ describe('SQL Injection Protection', () => {
     app = createApp(container)
   })
 
-  it('debe rechazar payloads maliciosos mediante validación de esquema', async () => {
+  it('debe rechazar payloads maliciosos mediante validacion de esquema', async () => {
     const maliciousPayload = {
       email: "admin' OR '1'='1",
       password: 'password123',
@@ -32,6 +32,6 @@ describe('SQL Injection Protection', () => {
       .post('/auth/login')
       .send(maliciousPayload)
 
-    expect([400, 401, 422]).toContain(response.status)
+    expect(response.status).toBe(422)
   })
 })

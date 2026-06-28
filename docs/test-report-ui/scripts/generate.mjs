@@ -87,6 +87,7 @@ const inferModule = (relativePath) => {
   if (normalized.includes('/admin/')) return 'admin'
   if (normalized.includes('/audit/')) return 'audit'
   if (normalized.includes('/infra/')) return 'infra'
+  if (normalized.includes('/owasp/')) return 'owasp'
 
   return 'shared'
 }
