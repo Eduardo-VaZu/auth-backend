@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { sql } from 'drizzle-orm'
 import request from 'supertest'
 import { describe, expect, it, beforeAll, afterAll } from 'vitest'
 import type { Express } from 'express'
@@ -11,8 +12,6 @@ import { GenericContainer, type StartedTestContainer } from 'testcontainers'
 import type { AppDatabase } from '@/infrastructure/db/db.js'
 import type { AppRedisClient } from '@/infrastructure/redis.js'
 
-type SqlTag = typeof import('drizzle-orm').sql
-
 describe('OWASP - Auth flow hardening integration', () => {
   let app: Express
   let redisClient: AppRedisClient | null = null
@@ -20,7 +19,6 @@ describe('OWASP - Auth flow hardening integration', () => {
   let redisContainer: StartedTestContainer | null = null
   let pool: Pool | null = null
   let db: AppDatabase | null = null
-  let sql: SqlTag | null = null
 
   const testRunId = Date.now()
   const testUser = {
@@ -41,15 +39,15 @@ describe('OWASP - Auth flow hardening integration', () => {
   }
 
   const getDatabaseDependencies = () => {
-    if (db === null || sql === null) {
+    if (db === null) {
       throw new Error('OWASP test environment was not initialized correctly')
     }
 
-    return { db, sql }
+    return { db }
   }
 
   const activateUserByEmail = async (email: string) => {
-    const { db, sql } = getDatabaseDependencies()
+    const { db } = getDatabaseDependencies()
 
     await db.execute(
       sql`UPDATE users SET status = 'active' WHERE email = ${email}`,
@@ -65,7 +63,7 @@ describe('OWASP - Auth flow hardening integration', () => {
   }
 
   const grantAdminRoleByEmail = async (email: string) => {
-    const { db, sql } = getDatabaseDependencies()
+    const { db } = getDatabaseDependencies()
 
     await db.execute(sql`
       INSERT INTO roles (code, name, description, is_system)
@@ -113,14 +111,12 @@ describe('OWASP - Auth flow hardening integration', () => {
 
     const dbModule = await import('@/infrastructure/db/db.js')
     const { migrate } = await import('drizzle-orm/node-postgres/migrator')
-    const drizzleCore = await import('drizzle-orm')
     const appModule = await import('@/app.js')
     const containerModule = await import('@/container/inversify.config.js')
     const typesModule = await import('@/container/types.js')
 
     pool = dbModule.pool
     db = dbModule.db
-    sql = drizzleCore.sql
 
     await migrate(db, { migrationsFolder: './drizzle' })
 
