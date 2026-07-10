@@ -24,6 +24,8 @@ reubicarlos despues por modulo (`access`, `credentials`, `admin`, etc.).
 - `tests/owasp/integration/InjectionProtection.test.ts`
 - `tests/owasp/integration/TamperedRefreshCookie.test.ts`
 - `tests/owasp/integration/AuthFlowHardening.test.ts`
+- `tests/owasp/integration/IdorSessionRevocation.test.ts`
+- `tests/owasp/integration/RateLimiting.test.ts`
 
 ## Explicacion Completa Por Archivo
 
@@ -283,6 +285,66 @@ Comando:
 npm.cmd run test:integration -- tests/owasp/integration/AuthFlowHardening.test.ts
 ```
 
+### 4. `IdorSessionRevocation.test.ts`
+
+Archivo:
+
+- `tests/owasp/integration/IdorSessionRevocation.test.ts`
+
+Que hace:
+
+- Arranca PostgreSQL y Redis en contenedores reales.
+- Registra dos usuarios: Usuario A (Atacante) y Usuario B (Víctima).
+- El Usuario B inicia sesión y obtiene el ID de su sesión activa.
+- El Usuario A (Atacante) intenta eliminar (revocar) la sesión del Usuario B enviando una solicitud `DELETE /auth/sessions/:sessionIdOfB`.
+- Verifica que el sistema responda con un error `404 Not Found` (para no revelar información sobre la existencia de la sesión) y que la sesión del Usuario B en la base de datos permanezca activa.
+
+Que valida en seguridad:
+
+- Mitigación de **IDOR** (Insecure Direct Object Reference) en la gestión de sesiones (OWASP A01:2021 - Broken Access Control).
+- Validación de propiedad de recursos antes de permitir operaciones destructivas.
+
+Resultado esperado:
+
+- `404 Not Found`
+- `error.code = NOT_FOUND`
+
+Comando:
+
+```bash
+npm.cmd run test:integration -- tests/owasp/integration/IdorSessionRevocation.test.ts
+```
+
+### 5. `RateLimiting.test.ts`
+
+Archivo:
+
+- `tests/owasp/integration/RateLimiting.test.ts`
+
+Que hace:
+
+- Reemplaza el cliente de Redis por un mock dinámico que devuelve respuestas específicas del script Lua usado por `rate-limit-redis`.
+- Simula dos escenarios de tráfico:
+  1. Tráfico bajo el límite (1 petición): Verifica que la petición no sea bloqueada por rate limit (retorna `404 Not Found` debido a que la ruta no existe, pero no `429`).
+  2. Tráfico sobre el límite (101 peticiones): Verifica que el middleware de rate limit bloquee la petición forzando el error `429 Too Many Requests`.
+
+Que valida en seguridad:
+
+- Mitigación de **Fuerza Bruta** y **Denegación de Servicio a Nivel de Aplicación** (OWASP A07:2021 - Identification and Authentication Failures).
+- Comprobación de que el middleware global de rate limit esté activo, se comunique correctamente con la capa de Redis y responda con el esquema de error estándar.
+
+Resultado esperado:
+
+- `429 Too Many Requests`
+- `error.code = RATE_LIMIT_EXCEEDED`
+- `error.message = Too many requests`
+
+Comando:
+
+```bash
+npm.cmd run test:integration -- tests/owasp/integration/RateLimiting.test.ts
+```
+
 ## Resumen Rapido De Casos
 
 | Archivo                         | Caso                          | Linea `it` | Riesgo cubierto                             | Resultado esperado       |
@@ -292,11 +354,11 @@ npm.cmd run test:integration -- tests/owasp/integration/AuthFlowHardening.test.t
 | `AuthFlowHardening.test.ts`     | login uniforme                | `156`      | user enumeration                            | `401`                    |
 | `AuthFlowHardening.test.ts`     | replay de refresh             | `183`      | refresh token reuse / session family revoke | `401`                    |
 | `AuthFlowHardening.test.ts`     | SQLi profunda en admin search | `229`      | injection en consulta real / bounded search | `200` con `0` resultados |
+| `IdorSessionRevocation.test.ts` | revocacion IDOR de sesion     | `97`       | Broken Access Control / IDOR                | `404 Not Found`          |
+| `RateLimiting.test.ts`          | limite de rate limit superado | `43`       | Brute force / App DoS / Rate limit          | `429 Too Many Requests`  |
 
 ## Notas Operativas
 
-- `InjectionProtection` y `TamperedRefreshCookie` usan mock minimo de Redis y
-  no requieren Docker.
-- `AuthFlowHardening` usa Testcontainers y requiere runtime Docker disponible.
-- Esta carpeta es temporal. Cuando casos se estabilicen, deben moverse a sus
-  modulos finales.
+- `InjectionProtection`, `TamperedRefreshCookie` y `RateLimiting` usan mock de Redis y no requieren Docker.
+- `AuthFlowHardening` y `IdorSessionRevocation` usan Testcontainers y requieren runtime Docker disponible (PostgreSQL y Redis).
+- Esta carpeta es temporal. Cuando casos se estabilicen, deben moverse a sus modulos finales.
