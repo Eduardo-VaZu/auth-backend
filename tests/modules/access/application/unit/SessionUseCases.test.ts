@@ -218,9 +218,11 @@ describe('SessionUseCases Unit Tests', () => {
           }),
         ),
       )
+      const recordEvent = vi.fn(() => Promise.resolve())
       const repositories = {
         userSessionRepository: { findById },
         refreshTokenRepository: { findLatestActiveBySessionId: vi.fn() },
+        authAuditService: { recordEvent },
         acquireUserMutationLock: vi.fn(),
       }
       const authUnitOfWork = {
