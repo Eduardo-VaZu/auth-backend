@@ -41,11 +41,25 @@ export class RevokeSessionUseCase {
 
         const session = await userSessionRepository.findById(input.sessionId)
 
-        if (
-          session === null ||
-          session.userId !== input.userId ||
-          !session.isActive(revokedAt)
-        ) {
+        if (session === null || !session.isActive(revokedAt)) {
+          throw new NotFoundError('Session not found')
+        }
+
+        if (session.userId !== input.userId) {
+          await authAuditService.recordEvent({
+            userId: input.userId,
+            eventType: 'unauthorized_session_revocation_attempt',
+            eventStatus: 'failure',
+            ipAddress: input.ipAddress,
+            userAgent: input.userAgent,
+            requestId: input.requestId,
+            metadata: {
+              targetSessionId: input.sessionId,
+              targetSessionUserId: session.userId,
+              reason: 'Ownership verification failed',
+            },
+          })
+
           throw new NotFoundError('Session not found')
         }
 
