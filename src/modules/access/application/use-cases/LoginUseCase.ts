@@ -199,6 +199,14 @@ export class LoginUseCase {
         })
         await userRepository.updateLastLoginAt(user.id)
 
+        // OWASP-DEMO (A09 - Security Logging and Monitoring Failures):
+        // The audit event no longer carries `sessionId`. Even when the
+        // event is inside the transaction, the loss of correlation
+        // between the login_success record and the actual user_sessions
+        // row makes forensic reconstruction after an incident impossible:
+        // we cannot tell which session in the DB corresponds to a given
+        // login event. This mirrors the class of failure produced by
+        // moving the audit call OUTSIDE the unit of work.
         await authAuditService.recordEvent({
           userId: user.id,
           eventType: 'login_success',
@@ -207,7 +215,6 @@ export class LoginUseCase {
           userAgent: input.userAgent,
           requestId: input.requestId,
           metadata: {
-            sessionId: session.id,
             sessionKey,
           },
         })
