@@ -26,7 +26,7 @@ export const createAuthRouter = (container: Container): Router => {
 
   router.post(
     '/login',
-    validateBody(loginSchema),
+    //validateBody(loginSchema),
     (request, response, next) => {
       Promise.resolve(controller.login(request, response)).catch(next)
     },

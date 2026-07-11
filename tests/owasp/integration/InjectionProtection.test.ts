@@ -32,6 +32,8 @@ describe('OWASP - Login malicious payload rejection', () => {
       .post('/auth/login')
       .send(maliciousPayload)
 
+    console.log(response.status)
+
     expect(response.status).toBe(422)
   })
 })
