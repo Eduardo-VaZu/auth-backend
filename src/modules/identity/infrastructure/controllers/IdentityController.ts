@@ -18,11 +18,16 @@ export class IdentityController {
   ) {}
 
   public async register(request: Request, response: Response): Promise<void> {
-    const body = request.body as Pick<RegisterInputDto, 'email' | 'password'>
+    // OWASP-DEMO (A04): controller forwards every field from the body,
+    // including the server-owned `role` and `status`. This is the wiring
+    // that turns a schema mistake into an actual privilege escalation.
+    const body = request.body as RegisterInputDto
     const result = await this.registerUseCase.execute({
       email: body.email,
       password: body.password,
       requestId: request.requestId ?? null,
+      ...(body.role === undefined ? {} : { role: body.role }),
+      ...(body.status === undefined ? {} : { status: body.status }),
     })
 
     response.status(201).json(result)

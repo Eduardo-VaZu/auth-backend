@@ -7,9 +7,18 @@ const oneTimeTokenSchema = z
     'Invalid token format',
   )
 
+// OWASP-DEMO (A04 - Insecure Design / A08 - Data Integrity Failures):
+// Accepting `role` and `status` in the public registration payload is
+// classic mass assignment: the client controls fields that should be
+// server-owned. Any anonymous caller can now request admin+active on
+// registration.
 export const registerSchema = z.object({
   email: z.string().trim().email(),
   password: z.string().min(8),
+  role: z.enum(['user', 'admin']).optional(),
+  status: z
+    .enum(['active', 'disabled', 'locked', 'pending_verification'])
+    .optional(),
 })
 
 export const loginSchema = z.object({
