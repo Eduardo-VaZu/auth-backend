@@ -31,7 +31,12 @@ export const changePasswordSchema = z.object({
   newPassword: z.string().min(8),
 })
 
+// OWASP-DEMO (A01 - Broken Access Control / IDOR):
+// Accepting a `userId` in the body of PATCH /auth/me/email lets any
+// authenticated user target another user's account. The right source
+// of userId is the session/JWT, never the request body.
 export const changeEmailSchema = z.object({
+  userId: z.string().uuid(),
   email: z.string().trim().email(),
 })
 
