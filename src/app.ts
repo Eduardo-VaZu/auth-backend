@@ -52,7 +52,12 @@ export const createApp = (container: Container): Express => {
   const redisClient = container.get<AppRedisClient>(TYPES.RedisClient)
 
   app.disable('x-powered-by')
-  app.set('trust proxy', env.TRUST_PROXY)
+  // OWASP-DEMO (A07 - IP spoofing via X-Forwarded-For):
+  // Hardcoded `trust proxy = true` regardless of env.TRUST_PROXY.
+  // With no real reverse proxy guaranteed to rewrite the header,
+  // any client can dictate its own IP by injecting X-Forwarded-For.
+  // Rate limiter and audit logs are then attackable/poisonable.
+  app.set('trust proxy', true)
   app.use(createRequestLogger(logger))
   app.use('/health', createHealthRouter(container))
   app.use(express.json({ limit: '10kb' }))
