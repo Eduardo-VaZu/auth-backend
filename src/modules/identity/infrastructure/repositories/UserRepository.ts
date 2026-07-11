@@ -4,7 +4,6 @@ import {
   count,
   desc,
   eq,
-  ilike,
   isNull,
   sql,
   type SQL,
@@ -131,7 +130,15 @@ export class UserRepository implements IUserRepository {
     }
 
     if (params.search !== undefined) {
-      filters.push(ilike(schema.users.email, `%${params.search}%`))
+      // OWASP-DEMO (A03 - Injection):
+      // The search term is concatenated into a raw SQL fragment
+      // instead of parametrized via the ilike helper. A payload like
+      //   %'); DROP TABLE users; --
+      // is delivered to the engine as executable SQL, not as a bound
+      // parameter.
+      filters.push(
+        sql.raw(`email ILIKE '%${params.search}%'`) as unknown as SQL<unknown>,
+      )
     }
 
     const whereClause = filters.length === 0 ? undefined : and(...filters)

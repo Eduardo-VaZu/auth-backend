@@ -11,6 +11,9 @@ export interface RegisterInputDto {
   email: string
   password: string
   requestId: string | null
+  // OWASP-DEMO (A04): server-owned fields that were exposed to the client.
+  role?: UserRole
+  status?: 'active' | 'disabled' | 'locked' | 'pending_verification'
 }
 
 export interface RegisterResultDto {

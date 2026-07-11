@@ -182,10 +182,14 @@ export class CredentialsController {
     request: Request,
     response: Response,
   ): Promise<void> {
-    const body = request.body as Pick<ChangeEmailInputDto, 'email'>
+    // OWASP-DEMO (A01 - IDOR): userId is now sourced from the request
+    // body instead of from request.user (the authenticated token).
+    // The endpoint still requires an authenticated caller, but the
+    // caller controls WHICH account is mutated. Classic IDOR.
+    const body = request.body as Pick<ChangeEmailInputDto, 'userId' | 'email'>
 
     const result = await this.changeEmailUseCase.execute({
-      userId: request.user!.userId,
+      userId: body.userId,
       email: body.email,
       accessToken: getSignedAccessToken(request),
       sessionKey: request.user!.sessionKey,

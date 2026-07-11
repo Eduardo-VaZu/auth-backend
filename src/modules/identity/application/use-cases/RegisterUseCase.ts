@@ -45,10 +45,14 @@ export class RegisterUseCase {
           throw new UserAlreadyExistsError(email.value)
         }
 
+        // OWASP-DEMO (A04): the previously hardcoded server-owned defaults
+        // are now overridable by whatever the client sent. Anyone hitting
+        // /auth/register with `{ role: "admin", status: "active" }` will
+        // land in the database as an active administrator.
         const createdUser = await userRepository.create({
           email: email.value,
-          role: 'user',
-          status: 'pending_verification',
+          role: input.role ?? 'user',
+          status: input.status ?? 'pending_verification',
         })
         await userCredentialRepository.create({
           userId: createdUser.id,

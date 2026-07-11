@@ -18,7 +18,6 @@ import { createIdentityRouter } from './modules/identity/infrastructure/routes/i
 import { createCredentialsRouter } from './modules/credentials/infrastructure/routes/credentials.routes.js'
 import { createHealthRouter } from './modules/health/routes/health.routes.js'
 import {
-  ForbiddenError,
   TooManyRequestsError,
   NotFoundError,
 } from './shared/errors/HttpErrors.js'
@@ -53,18 +52,32 @@ export const createApp = (container: Container): Express => {
   const redisClient = container.get<AppRedisClient>(TYPES.RedisClient)
 
   app.disable('x-powered-by')
-  app.set('trust proxy', env.TRUST_PROXY)
+  // OWASP-DEMO (A07 - IP spoofing via X-Forwarded-For):
+  // Hardcoded to trust every proxy hop regardless of env.TRUST_PROXY,
+  // via a function that always returns true rather than the literal
+  // boolean `true`. Behaviorally identical (every hop, including an
+  // attacker-controlled X-Forwarded-For, is trusted) — expressed this
+  // way so express-rate-limit's startup guard
+  // (`request.app.get('trust proxy') === true`,
+  // ERR_ERL_PERMISSIVE_TRUST_PROXY) doesn't crash the app before the
+  // vulnerability can be observed.
+  // With no real reverse proxy guaranteed to rewrite the header,
+  // any client can dictate its own IP by injecting X-Forwarded-For.
+  // Rate limiter and audit logs are then attackable/poisonable.
+  app.set('trust proxy', () => true)
   app.use(createRequestLogger(logger))
   app.use('/health', createHealthRouter(container))
   app.use(express.json({ limit: '10kb' }))
+  // OWASP-DEMO (A05 - Security Misconfiguration / CORS):
+  // The origin callback reflects ANY caller-supplied Origin as
+  // allowed and keeps `credentials: true`. Any external site visited
+  // by a logged-in user can now issue authenticated requests to our
+  // API from the victim's browser and read the responses (with the
+  // victim's cookies attached).
   app.use(
     cors({
-      origin: (origin, callback) => {
-        if (!origin || env.CORS_ORIGIN.includes(origin)) {
-          callback(null, true)
-        } else {
-          callback(new ForbiddenError('Origin is not allowed by CORS policy'))
-        }
+      origin: (_origin, callback) => {
+        callback(null, true)
       },
       credentials: true,
     }),

@@ -7,9 +7,18 @@ const oneTimeTokenSchema = z
     'Invalid token format',
   )
 
+// OWASP-DEMO (A04 - Insecure Design / A08 - Data Integrity Failures):
+// Accepting `role` and `status` in the public registration payload is
+// classic mass assignment: the client controls fields that should be
+// server-owned. Any anonymous caller can now request admin+active on
+// registration.
 export const registerSchema = z.object({
   email: z.string().trim().email(),
   password: z.string().min(8),
+  role: z.enum(['user', 'admin']).optional(),
+  status: z
+    .enum(['active', 'disabled', 'locked', 'pending_verification'])
+    .optional(),
 })
 
 export const loginSchema = z.object({
@@ -22,7 +31,12 @@ export const changePasswordSchema = z.object({
   newPassword: z.string().min(8),
 })
 
+// OWASP-DEMO (A01 - Broken Access Control / IDOR):
+// Accepting a `userId` in the body of PATCH /auth/me/email lets any
+// authenticated user target another user's account. The right source
+// of userId is the session/JWT, never the request body.
 export const changeEmailSchema = z.object({
+  userId: z.string().uuid(),
   email: z.string().trim().email(),
 })
 

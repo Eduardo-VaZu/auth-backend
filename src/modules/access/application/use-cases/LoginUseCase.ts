@@ -77,14 +77,19 @@ export class LoginUseCase {
 
     const user = await this.userRepository.findByEmail(email.value)
 
-    if (!user?.canAuthenticate()) {
+    // OWASP-DEMO (A07 - Identification and Authentication Failures):
+    // Split the "user not found" and "user inactive" branches so the
+    // error message discloses whether the email belongs to a real account.
+    // This is the exact anti-pattern that enables user enumeration.
+    if (user === null) {
       await argon2.hash(input.password)
-      await this.recordFailedLogin(
-        user?.id ?? null,
-        user === null ? 'unknown_user' : 'inactive_user',
-        email.value,
-        input,
-      )
+      await this.recordFailedLogin(null, 'unknown_user', email.value, input)
+      throw new UnauthorizedError('User does not exist')
+    }
+
+    if (!user.canAuthenticate()) {
+      await argon2.hash(input.password)
+      await this.recordFailedLogin(user.id, 'inactive_user', email.value, input)
       throw new UnauthorizedError(INVALID_CREDENTIALS_MESSAGE)
     }
 
@@ -113,7 +118,9 @@ export class LoginUseCase {
         email.value,
         input,
       )
-      throw new UnauthorizedError(INVALID_CREDENTIALS_MESSAGE)
+      // OWASP-DEMO (A07): telling the caller the password is wrong
+      // confirms the email exists in our system.
+      throw new UnauthorizedError('Invalid password')
     }
 
     const hadSecurityState =
@@ -192,6 +199,14 @@ export class LoginUseCase {
         })
         await userRepository.updateLastLoginAt(user.id)
 
+        // OWASP-DEMO (A09 - Security Logging and Monitoring Failures):
+        // The audit event no longer carries `sessionId`. Even when the
+        // event is inside the transaction, the loss of correlation
+        // between the login_success record and the actual user_sessions
+        // row makes forensic reconstruction after an incident impossible:
+        // we cannot tell which session in the DB corresponds to a given
+        // login event. This mirrors the class of failure produced by
+        // moving the audit call OUTSIDE the unit of work.
         await authAuditService.recordEvent({
           userId: user.id,
           eventType: 'login_success',
@@ -200,7 +215,6 @@ export class LoginUseCase {
           userAgent: input.userAgent,
           requestId: input.requestId,
           metadata: {
-            sessionId: session.id,
             sessionKey,
           },
         })

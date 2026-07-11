@@ -37,22 +37,27 @@ export const createAdminRouter = (container: Container): Router => {
     userSessionRepository,
   )
 
-  router.use(authenticate, requireAdmin)
+  // OWASP-DEMO (A01 - Broken Access Control):
+  // Refactor to per-route guards for "explicitness" — but the DELETE
+  // /users/:userId route was left without `requireAdmin`. Any
+  // authenticated non-admin can now soft-delete arbitrary accounts.
+  router.use(authenticate)
 
-  router.get('/roles', (request, response, next) => {
+  router.get('/roles', requireAdmin, (request, response, next) => {
     Promise.resolve(controller.listRoles(request, response)).catch(next)
   })
 
-  router.get('/users', (request, response, next) => {
+  router.get('/users', requireAdmin, (request, response, next) => {
     Promise.resolve(controller.listUsers(request, response)).catch(next)
   })
 
-  router.get('/users/:userId', (request, response, next) => {
+  router.get('/users/:userId', requireAdmin, (request, response, next) => {
     Promise.resolve(controller.getUserProfile(request, response)).catch(next)
   })
 
   router.patch(
     '/users/:userId/status',
+    requireAdmin,
     validateBody(updateUserStatusSchema),
     (request, response, next) => {
       Promise.resolve(controller.updateUserStatus(request, response)).catch(
@@ -61,25 +66,31 @@ export const createAdminRouter = (container: Container): Router => {
     },
   )
 
+  // OWASP-DEMO: missing requireAdmin — regression on the destructive path.
   router.delete('/users/:userId', (request, response, next) => {
     Promise.resolve(controller.softDeleteUser(request, response)).catch(next)
   })
 
-  router.get('/users/:userId/roles', (request, response, next) => {
+  router.get('/users/:userId/roles', requireAdmin, (request, response, next) => {
     Promise.resolve(controller.listUserRoles(request, response)).catch(next)
   })
 
   router.post(
     '/users/:userId/roles',
+    requireAdmin,
     validateBody(assignUserRoleSchema),
     (request, response, next) => {
       Promise.resolve(controller.assignUserRole(request, response)).catch(next)
     },
   )
 
-  router.delete('/users/:userId/roles/:roleId', (request, response, next) => {
-    Promise.resolve(controller.revokeUserRole(request, response)).catch(next)
-  })
+  router.delete(
+    '/users/:userId/roles/:roleId',
+    requireAdmin,
+    (request, response, next) => {
+      Promise.resolve(controller.revokeUserRole(request, response)).catch(next)
+    },
+  )
 
   return router
 }
