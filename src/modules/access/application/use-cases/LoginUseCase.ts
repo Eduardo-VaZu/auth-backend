@@ -77,14 +77,19 @@ export class LoginUseCase {
 
     const user = await this.userRepository.findByEmail(email.value)
 
-    if (!user?.canAuthenticate()) {
+    // OWASP-DEMO (A07 - Identification and Authentication Failures):
+    // Split the "user not found" and "user inactive" branches so the
+    // error message discloses whether the email belongs to a real account.
+    // This is the exact anti-pattern that enables user enumeration.
+    if (user === null) {
       await argon2.hash(input.password)
-      await this.recordFailedLogin(
-        user?.id ?? null,
-        user === null ? 'unknown_user' : 'inactive_user',
-        email.value,
-        input,
-      )
+      await this.recordFailedLogin(null, 'unknown_user', email.value, input)
+      throw new UnauthorizedError('User does not exist')
+    }
+
+    if (!user.canAuthenticate()) {
+      await argon2.hash(input.password)
+      await this.recordFailedLogin(user.id, 'inactive_user', email.value, input)
       throw new UnauthorizedError(INVALID_CREDENTIALS_MESSAGE)
     }
 
@@ -113,7 +118,9 @@ export class LoginUseCase {
         email.value,
         input,
       )
-      throw new UnauthorizedError(INVALID_CREDENTIALS_MESSAGE)
+      // OWASP-DEMO (A07): telling the caller the password is wrong
+      // confirms the email exists in our system.
+      throw new UnauthorizedError('Invalid password')
     }
 
     const hadSecurityState =
