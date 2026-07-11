@@ -18,7 +18,6 @@ import { createIdentityRouter } from './modules/identity/infrastructure/routes/i
 import { createCredentialsRouter } from './modules/credentials/infrastructure/routes/credentials.routes.js'
 import { createHealthRouter } from './modules/health/routes/health.routes.js'
 import {
-  ForbiddenError,
   TooManyRequestsError,
   NotFoundError,
 } from './shared/errors/HttpErrors.js'
@@ -57,14 +56,16 @@ export const createApp = (container: Container): Express => {
   app.use(createRequestLogger(logger))
   app.use('/health', createHealthRouter(container))
   app.use(express.json({ limit: '10kb' }))
+  // OWASP-DEMO (A05 - Security Misconfiguration / CORS):
+  // The origin callback reflects ANY caller-supplied Origin as
+  // allowed and keeps `credentials: true`. Any external site visited
+  // by a logged-in user can now issue authenticated requests to our
+  // API from the victim's browser and read the responses (with the
+  // victim's cookies attached).
   app.use(
     cors({
-      origin: (origin, callback) => {
-        if (!origin || env.CORS_ORIGIN.includes(origin)) {
-          callback(null, true)
-        } else {
-          callback(new ForbiddenError('Origin is not allowed by CORS policy'))
-        }
+      origin: (_origin, callback) => {
+        callback(null, true)
       },
       credentials: true,
     }),
