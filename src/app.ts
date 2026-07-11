@@ -53,11 +53,18 @@ export const createApp = (container: Container): Express => {
 
   app.disable('x-powered-by')
   // OWASP-DEMO (A07 - IP spoofing via X-Forwarded-For):
-  // Hardcoded `trust proxy = true` regardless of env.TRUST_PROXY.
+  // Hardcoded to trust every proxy hop regardless of env.TRUST_PROXY,
+  // via a function that always returns true rather than the literal
+  // boolean `true`. Behaviorally identical (every hop, including an
+  // attacker-controlled X-Forwarded-For, is trusted) — expressed this
+  // way so express-rate-limit's startup guard
+  // (`request.app.get('trust proxy') === true`,
+  // ERR_ERL_PERMISSIVE_TRUST_PROXY) doesn't crash the app before the
+  // vulnerability can be observed.
   // With no real reverse proxy guaranteed to rewrite the header,
   // any client can dictate its own IP by injecting X-Forwarded-For.
   // Rate limiter and audit logs are then attackable/poisonable.
-  app.set('trust proxy', true)
+  app.set('trust proxy', () => true)
   app.use(createRequestLogger(logger))
   app.use('/health', createHealthRouter(container))
   app.use(express.json({ limit: '10kb' }))

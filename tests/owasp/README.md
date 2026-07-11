@@ -45,7 +45,35 @@ Ver `docs/owasp/` para las fichas de cada hallazgo, incluyendo analogía, impact
 ```bash
 # Correr las nueve pruebas OWASP
 npm run test:integration -- tests/owasp/integration/
+```
 
-# Correr una sola prueba
+## Ejecutar pruebas individuales
+
+```bash
+# A07 - Enumeración de usuarios en /auth/login
 npm run test:integration -- tests/owasp/integration/LoginUserEnumeration.test.ts
+
+# A04/A08 - Mass assignment en /auth/register
+npm run test:integration -- tests/owasp/integration/RegisterMassAssignment.test.ts
+
+# A01 - IDOR al cambiar email de otro usuario
+npm run test:integration -- tests/owasp/integration/IdorChangeEmail.test.ts
+
+# A01 - Broken access control en admin
+npm run test:integration -- tests/owasp/integration/BrokenAccessControlAdmin.test.ts
+
+# A02 - Replay de refresh token tras logout
+npm run test:integration -- tests/owasp/integration/LogoutRefreshReplay.test.ts
+
+# A05 - CORS con allowlist estricta
+npm run test:integration -- tests/owasp/integration/CorsOriginAllowlist.test.ts
+
+# A07 (variante) - IP spoofing vía X-Forwarded-For
+npm run test:integration -- tests/owasp/integration/TrustedProxyIpSpoofing.test.ts
+
+# A09 - Coherencia de auditoría dentro de transacción
+npm run test:integration -- tests/owasp/integration/AuditInsideTransaction.test.ts
+
+# A03 - SQL injection en búsqueda de usuarios (admin)
+npm run test:integration -- tests/owasp/integration/SqlInjectionAdminSearch.test.ts
 ```
